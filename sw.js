@@ -1,4 +1,4 @@
-const CACHE_NAME="atrium-attendance-v1";
+const CACHE_NAME="atrium-attendance-v2";
 const ASSETS=[
   "./index.html",
   "./manifest.json",
@@ -19,16 +19,23 @@ self.addEventListener("activate",e=>{
   );
 });
 
+/* network-first for our own pages so updates are picked up immediately;
+   cache is only the offline fallback. */
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET") return;
+  const isOwn=e.request.url.startsWith(self.location.origin);
+  if(!isOwn){
+    // third-party (firebase SDK etc.) - try network, fall back to cache
+    e.respondWith(
+      fetch(e.request).catch(()=>caches.match(e.request))
+    );
+    return;
+  }
   e.respondWith(
-    caches.match(e.request).then(cached=>{
-      if(cached) return cached;
-      return fetch(e.request).then(resp=>{
-        const copy=resp.clone();
-        caches.open(CACHE_NAME).then(cache=>cache.put(e.request,copy));
-        return resp;
-      }).catch(()=>caches.match("./index.html"));
-    })
+    fetch(e.request).then(resp=>{
+      const copy=resp.clone();
+      caches.open(CACHE_NAME).then(cache=>cache.put(e.request,copy));
+      return resp;
+    }).catch(()=>caches.match(e.request).then(c=>c||caches.match("./index.html")))
   );
 });
