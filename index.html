@@ -663,7 +663,7 @@ function resetDefaults(){
 }
 
 async function enterApp(uid,acc){
-  currentUser={uid,empId:acc.empId,fullName:acc.fullName,role:acc.role};
+  currentUser={uid,empId:acc.empId,fullName:acc.fullName,role:acc.role,isAdmin:!!acc.isAdmin};
   document.getElementById("authScreen").style.display="none";
   document.querySelector(".main").style.display="block";
   document.querySelector(".header").style.visibility="visible";
