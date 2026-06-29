@@ -12,6 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="Atrium">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -483,17 +486,25 @@ document.getElementById("darkToggle").addEventListener("change",function(){
   applyDark();
 });
 
+/* ---------------- FIREBASE ---------------- */
+const firebaseConfig={
+  apiKey:"AIzaSyBwwesTfex8xpF9_AZTEq5A048VIRTjDe0",
+  authDomain:"atrium-attendance.firebaseapp.com",
+  projectId:"atrium-attendance",
+  storageBucket:"atrium-attendance.firebasestorage.app",
+  messagingSenderId:"120200658458",
+  appId:"1:120200658458:web:3fd0ebc2a834288ab79ba3"
+};
+firebase.initializeApp(firebaseConfig);
+const fbAuth=firebase.auth();
+const db=firebase.firestore();
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+function empIdToEmail(empId){ return empId.trim().toLowerCase().replace(/[^a-z0-9._-]/g,"")+"@atrium.local"; }
+
 /* ---------------- AUTH ---------------- */
-const ACCOUNTS_KEY="eg_accounts_v3";
-const SESSION_KEY="eg_session_v3";
-
-function getAccounts(){ try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||"{}");}catch(e){return {};} }
-function saveAccounts(a){ localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a)); }
-function getSession(){ return localStorage.getItem(SESSION_KEY)||""; }
-function setSession(empId){ localStorage.setItem(SESSION_KEY,empId); }
-function clearSession(){ localStorage.removeItem(SESSION_KEY); }
-
-let currentUser=null; // {empId, fullName, role}
+let currentUser=null; // {uid, empId, fullName, role}
+let authBusy=false;
 
 function switchAuthTab(which){
   document.getElementById("tabLogin").classList.toggle("active",which==="login");
@@ -504,35 +515,57 @@ function switchAuthTab(which){
   document.getElementById("signupError").textContent="";
 }
 
-function doSignup(){
+function fbErrMsg(code){
+  if(code==="auth/email-already-in-use") return t("errExists");
+  if(code==="auth/invalid-credential"||code==="auth/wrong-password"||code==="auth/user-not-found") return t("errLogin");
+  if(code==="auth/weak-password") return curLang==="ar"?"كلمة السر ضعيفة (6 حروف على الأقل).":"Password too weak (min 6 characters).";
+  return curLang==="ar"?"حدث خطأ، حاول مرة أخرى.":"Something went wrong, please try again.";
+}
+
+async function doSignup(){
+  if(authBusy)return;
   const name=document.getElementById("suName").value.trim();
   const empId=document.getElementById("suEmpId").value.trim();
   const pass=document.getElementById("suPassword").value;
   const role=document.getElementById("suRole").value;
   const err=document.getElementById("signupError");
+  err.textContent="";
   if(!name||!empId||!pass||!role){ err.textContent=t("errFill"); return; }
-  const accounts=getAccounts();
-  if(accounts[empId]){ err.textContent=t("errExists"); return; }
-  accounts[empId]={fullName:name,password:pass,role:role};
-  saveAccounts(accounts);
-  setSession(empId);
-  enterApp(empId,accounts[empId]);
+  authBusy=true;
+  try{
+    const email=empIdToEmail(empId);
+    const cred=await fbAuth.createUserWithEmailAndPassword(email,pass);
+    const uid=cred.user.uid;
+    const profile={empId,fullName:name,role};
+    await db.collection("users").doc(uid).set(profile);
+    enterApp(uid,profile);
+  }catch(e){
+    err.textContent=fbErrMsg(e.code);
+  }finally{ authBusy=false; }
 }
 
-function doLogin(){
+async function doLogin(){
+  if(authBusy)return;
   const empId=document.getElementById("loginEmpId").value.trim();
   const pass=document.getElementById("loginPassword").value;
   const err=document.getElementById("loginError");
+  err.textContent="";
   if(!empId||!pass){ err.textContent=t("errFill"); return; }
-  const accounts=getAccounts();
-  const acc=accounts[empId];
-  if(!acc||acc.password!==pass){ err.textContent=t("errLogin"); return; }
-  setSession(empId);
-  enterApp(empId,acc);
+  authBusy=true;
+  try{
+    const email=empIdToEmail(empId);
+    const cred=await fbAuth.signInWithEmailAndPassword(email,pass);
+    const uid=cred.user.uid;
+    const doc=await db.collection("users").doc(uid).get();
+    if(!doc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
+    enterApp(uid,doc.data());
+  }catch(e){
+    err.textContent=fbErrMsg(e.code);
+  }finally{ authBusy=false; }
 }
 
 function doLogout(){
-  clearSession();
+  fbAuth.signOut();
   currentUser=null;
   document.getElementById("authScreen").style.display="flex";
   document.querySelector(".main").style.display="none";
@@ -560,17 +593,17 @@ function resetDefaults(){
   attended={}; halfAtt={}; leaveAmt={}; leaveType={}; otHours={};
 }
 
-function enterApp(empId,acc){
-  currentUser={empId,fullName:acc.fullName,role:acc.role};
+async function enterApp(uid,acc){
+  currentUser={uid,empId:acc.empId,fullName:acc.fullName,role:acc.role};
   document.getElementById("authScreen").style.display="none";
   document.querySelector(".main").style.display="block";
   document.querySelector(".header").style.visibility="visible";
   document.querySelector(".footer").style.visibility="visible";
   updateHeaderUser();
   setupRoleUI();
-  STORE="eg_att_v4_"+empId;
   resetDefaults();
-  load(); render();
+  await load();
+  render();
 }
 
 function isHourlyRole(){ return currentUser && ROLES_HOURLY.includes(currentUser.role); }
@@ -585,9 +618,9 @@ function setupRoleUI(){
 }
 
 /* ---------------- DATA ---------------- */
-let STORE="eg_att_v4";
 let rows=[];
 let attended={}, halfAtt={}, leaveAmt={}, leaveType={}, otHours={};
+let saveTimer=null;
 
 function getSettings(){
   return {
@@ -602,15 +635,21 @@ function getSettings(){
 }
 
 function save(){
-  try{
+  if(!currentUser)return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
     const s=getSettings();
-    localStorage.setItem(STORE,JSON.stringify({...s,attended,halfAtt,leaveAmt,leaveType,otHours}));
-  }catch(e){}
+    db.collection("attendance").doc(currentUser.uid)
+      .set({...s,attended,halfAtt,leaveAmt,leaveType,otHours},{merge:false})
+      .catch(()=>{});
+  },400);
 }
 
-function load(){
+async function load(){
+  if(!currentUser)return;
   try{
-    const d=JSON.parse(localStorage.getItem(STORE)||"{}");
+    const snap=await db.collection("attendance").doc(currentUser.uid).get();
+    const d=snap.exists?snap.data():{};
     if(d.startDate) document.getElementById("startDate").value=d.startDate;
     if(d.workDays)  document.getElementById("workDays").value=d.workDays;
     if(d.leaveDays) document.getElementById("leaveDays").value=d.leaveDays;
@@ -1020,14 +1059,16 @@ if("serviceWorker" in navigator && (location.protocol==="http:"||location.protoc
   });
 }
 
-(function initSession(){
-  const empId=getSession();
-  if(empId){
-    const accounts=getAccounts();
-    if(accounts[empId]){ enterApp(empId,accounts[empId]); return; }
+fbAuth.onAuthStateChanged(async user=>{
+  if(user){
+    try{
+      const doc=await db.collection("users").doc(user.uid).get();
+      if(doc.exists){ enterApp(user.uid,doc.data()); return; }
+    }catch(e){}
   }
+  currentUser=null;
   document.getElementById("authScreen").style.display="flex";
-})();
+});
 </script>
 </body>
 </html>
