@@ -222,11 +222,25 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
       <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="loginPassword" autocomplete="current-password"></div>
       <div class="auth-error" id="loginError"></div>
       <button class="auth-btn" onclick="doLogin()" data-i18n="loginBtn">Login</button>
+      <div style="text-align:center;margin-top:10px">
+        <a href="javascript:void(0)" onclick="openForgot()" style="font-size:11.5px;color:#1F4E79;text-decoration:underline" data-i18n="forgotPassword">Forgot password?</a>
+      </div>
+    </div>
+
+    <div class="auth-panel" id="panelForgot">
+      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="fpEmpId"></div>
+      <div class="auth-error" id="forgotError"></div>
+      <div class="auth-error" id="forgotSuccess" style="color:#1a7a3f"></div>
+      <button class="auth-btn" onclick="doForgotPassword()" data-i18n="sendResetLink">Send reset link</button>
+      <div style="text-align:center;margin-top:10px">
+        <a href="javascript:void(0)" onclick="switchAuthTab('login')" style="font-size:11.5px;color:#1F4E79;text-decoration:underline" data-i18n="backToLogin">Back to login</a>
+      </div>
     </div>
 
     <div class="auth-panel" id="panelSignup">
       <div class="auth-field"><label data-i18n="fullName">Full Name</label><input type="text" id="suName"></div>
       <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="suEmpId"></div>
+      <div class="auth-field"><label data-i18n="email">Email</label><input type="email" id="suEmail" autocomplete="email"></div>
       <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="suPassword"></div>
       <div class="auth-field"><label data-i18n="role">Job Role</label>
         <select id="suRole">
@@ -278,7 +292,26 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
       <b id="headerUserName">—</b>
       <span id="headerUserRole">—</span>
     </div>
+    <button class="icon-btn" id="adminBtn" style="display:none" onclick="openAdminPanel()" data-i18n="adminPanel">Admin Panel</button>
     <button class="icon-btn btn-logout" onclick="doLogout()" data-i18n="logout">Logout</button>
+  </div>
+</div>
+
+<!-- admin panel modal -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal" style="max-width:680px;width:95%">
+    <h3 data-i18n="adminUsersTitle">All Users</h3>
+    <div style="max-height:60vh;overflow:auto;margin-bottom:14px">
+      <table style="width:100%;font-size:12px;border-collapse:collapse" id="adminTable">
+        <thead><tr style="text-align:left">
+          <th data-i18n="adminEmpId">Emp ID</th><th data-i18n="adminName">Name</th><th data-i18n="adminRole">Role</th><th data-i18n="adminEmail">Email</th><th></th>
+        </tr></thead>
+        <tbody id="adminTableBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('adminModal').classList.remove('open')" data-i18n="adminClose">Close</button>
+    </div>
   </div>
 </div>
 
@@ -421,6 +454,10 @@ const I18N={
     cancel:"Cancel",clearConfirm:"Yes, clear all",
     errFill:"Please fill in all fields.",errExists:"This Employee ID already has an account.",errLogin:"Invalid employee ID or password.",
     dayOffUsed:"Cycle day-off taken",leaveTypeRegular:"Regular",leaveTypeEmergency:"Emergency",leaveTypeDayOff:"Day Off (Cycle)",
+    email:"Email",forgotPassword:"Forgot password?",sendResetLink:"Send reset link",backToLogin:"Back to login",
+    resetLinkSent:"A password reset link has been sent to your email.",
+    adminPanel:"Admin Panel",adminUsersTitle:"All Users",adminDelete:"Delete",adminConfirmDelete:"Delete this user's account data? This cannot be undone.",
+    adminEmpId:"Emp ID",adminName:"Name",adminRole:"Role",adminEmail:"Email",adminClose:"Close",
   },
   ar:{
     appTitle:"متابعة الحضور والإجازات - مصر",authSub:"سجّل دخولك أو أنشئ حساب جديد",
@@ -450,6 +487,10 @@ const I18N={
     cancel:"إلغاء",clearConfirm:"نعم، حذف الكل",
     errFill:"من فضلك أدخل كل البيانات المطلوبة.",errExists:"يوجد حساب بهذا الكود من قبل.",errLogin:"كود الموظف أو كلمة السر غير صحيحة.",
     dayOffUsed:"أيام راحة الدورة المستخدمة",leaveTypeRegular:"عادية",leaveTypeEmergency:"طوارئ",leaveTypeDayOff:"يوم راحة (دورة)",
+    email:"البريد الإلكتروني",forgotPassword:"نسيت كلمة السر؟",sendResetLink:"إرسال رابط الاستعادة",backToLogin:"رجوع لتسجيل الدخول",
+    resetLinkSent:"تم إرسال رابط استعادة كلمة السر إلى بريدك الإلكتروني.",
+    adminPanel:"لوحة الإدارة",adminUsersTitle:"كل المستخدمين",adminDelete:"حذف",adminConfirmDelete:"حذف بيانات حساب هذا المستخدم؟ لا يمكن التراجع عن هذا.",
+    adminEmpId:"كود الموظف",adminName:"الاسم",adminRole:"الوظيفة",adminEmail:"البريد الإلكتروني",adminClose:"إغلاق",
   }
 };
 let curLang=localStorage.getItem("eg_lang")||"en";
@@ -500,8 +541,6 @@ const fbAuth=firebase.auth();
 const db=firebase.firestore();
 db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
 
-function empIdToEmail(empId){ return empId.trim().toLowerCase().replace(/[^a-z0-9._-]/g,"")+"@atrium.local"; }
-
 /* ---------------- AUTH ---------------- */
 let currentUser=null; // {uid, empId, fullName, role}
 let authBusy=false;
@@ -511,9 +550,13 @@ function switchAuthTab(which){
   document.getElementById("tabSignup").classList.toggle("active",which==="signup");
   document.getElementById("panelLogin").classList.toggle("active",which==="login");
   document.getElementById("panelSignup").classList.toggle("active",which==="signup");
+  document.getElementById("panelForgot").classList.toggle("active",which==="forgot");
   document.getElementById("loginError").textContent="";
   document.getElementById("signupError").textContent="";
+  document.getElementById("forgotError").textContent="";
+  document.getElementById("forgotSuccess").textContent="";
 }
+function openForgot(){ switchAuthTab("forgot"); }
 
 function fbErrMsg(code){
   if(code==="auth/email-already-in-use") return t("errExists");
@@ -522,22 +565,27 @@ function fbErrMsg(code){
   return curLang==="ar"?"حدث خطأ، حاول مرة أخرى.":"Something went wrong, please try again.";
 }
 
+const ADMIN_EMPID="4433";
+const ADMIN_EMAIL="mohd.met89@gmail.com";
+
 async function doSignup(){
   if(authBusy)return;
   const name=document.getElementById("suName").value.trim();
   const empId=document.getElementById("suEmpId").value.trim();
+  const email=document.getElementById("suEmail").value.trim();
   const pass=document.getElementById("suPassword").value;
   const role=document.getElementById("suRole").value;
   const err=document.getElementById("signupError");
   err.textContent="";
-  if(!name||!empId||!pass||!role){ err.textContent=t("errFill"); return; }
+  if(!name||!empId||!email||!pass||!role){ err.textContent=t("errFill"); return; }
   authBusy=true;
   try{
-    const email=empIdToEmail(empId);
     const cred=await fbAuth.createUserWithEmailAndPassword(email,pass);
     const uid=cred.user.uid;
-    const profile={empId,fullName:name,role};
+    const isAdmin=(empId===ADMIN_EMPID&&email.toLowerCase()===ADMIN_EMAIL.toLowerCase());
+    const profile={empId,fullName:name,role,email,isAdmin};
     await db.collection("users").doc(uid).set(profile);
+    await db.collection("empIndex").doc(empId).set({uid,email});
     enterApp(uid,profile);
   }catch(e){
     err.textContent=fbErrMsg(e.code);
@@ -553,12 +601,33 @@ async function doLogin(){
   if(!empId||!pass){ err.textContent=t("errFill"); return; }
   authBusy=true;
   try{
-    const email=empIdToEmail(empId);
+    const idxDoc=await db.collection("empIndex").doc(empId).get();
+    if(!idxDoc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
+    const email=idxDoc.data().email;
     const cred=await fbAuth.signInWithEmailAndPassword(email,pass);
     const uid=cred.user.uid;
     const doc=await db.collection("users").doc(uid).get();
     if(!doc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
     enterApp(uid,doc.data());
+  }catch(e){
+    err.textContent=fbErrMsg(e.code);
+  }finally{ authBusy=false; }
+}
+
+async function doForgotPassword(){
+  if(authBusy)return;
+  const empId=document.getElementById("fpEmpId").value.trim();
+  const err=document.getElementById("forgotError");
+  const ok=document.getElementById("forgotSuccess");
+  err.textContent=""; ok.textContent="";
+  if(!empId){ err.textContent=t("errFill"); return; }
+  authBusy=true;
+  try{
+    const idxDoc=await db.collection("empIndex").doc(empId).get();
+    if(!idxDoc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
+    const email=idxDoc.data().email;
+    await fbAuth.sendPasswordResetEmail(email);
+    ok.textContent=t("resetLinkSent");
   }catch(e){
     err.textContent=fbErrMsg(e.code);
   }finally{ authBusy=false; }
@@ -615,6 +684,39 @@ function setupRoleUI(){
   document.getElementById("otStatCard2").style.display=hourly?"":"none";
   document.getElementById("phBonusCard").style.display=hourly?"none":"";
   document.getElementById("phBonusStat").style.display=hourly?"none":"";
+  document.getElementById("adminBtn").style.display=(currentUser&&currentUser.isAdmin)?"":"none";
+}
+
+async function openAdminPanel(){
+  const tbody=document.getElementById("adminTableBody");
+  tbody.innerHTML="<tr><td colspan='5' style='text-align:center;padding:10px'>...</td></tr>";
+  document.getElementById("adminModal").classList.add("open");
+  try{
+    const snap=await db.collection("users").get();
+    tbody.innerHTML="";
+    snap.forEach(doc=>{
+      const u=doc.data(); const uid=doc.id;
+      const isMe=currentUser&&uid===currentUser.uid;
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${u.empId||""}</td><td>${u.fullName||""}</td><td>${u.role||""}</td><td style="font-size:10px">${u.email||""}</td>
+        <td>${isMe?"":'<button class="btn btn-clear" style="padding:3px 8px" onclick="adminDeleteUser(\''+uid+'\',\''+(u.empId||"")+'\')">'+t("adminDelete")+'</button>'}</td>`;
+      tbody.appendChild(tr);
+    });
+  }catch(e){
+    tbody.innerHTML="<tr><td colspan='5' style='text-align:center;padding:10px;color:#c0392b'>Error loading users</td></tr>";
+  }
+}
+
+async function adminDeleteUser(uid,empId){
+  if(!confirm(t("adminConfirmDelete")))return;
+  try{
+    await db.collection("users").doc(uid).delete();
+    await db.collection("attendance").doc(uid).delete();
+    if(empId) await db.collection("empIndex").doc(empId).delete();
+    openAdminPanel();
+  }catch(e){
+    alert("Error: "+e.message);
+  }
 }
 
 /* ---------------- DATA ---------------- */
