@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<title>Atrium Attendance Tracker</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F4E79">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Atrium">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f5;--card:#fff;--text:#222;--sub:#555;--muted:#888;--border:#e9ecef;
+  --header1:#1F4E79;--header2:#2E75B6;
+}
+body.dark{
+  --bg:#11161d;--card:#1b232e;--text:#e8eaed;--sub:#aab2bd;--muted:#7e8896;--border:#2a3441;
+}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s}
+body.dark .stat,body.dark .bal-card,body.dark .bal-settings,body.dark .controls,body.dark .legend,body.dark .table-wrap{background:var(--card)}
+body.dark input,body.dark select{background:#222c38;color:var(--text);border-color:#3a4654}
+body.dark td{border-bottom-color:#28323e}
+body.dark th{background:#142233}
+body.dark .modal{background:var(--card);color:var(--text)}
+body.dark .footer{background:#0d1117;color:#aab2bd}
+.header{background:linear-gradient(135deg,var(--header1),var(--header2));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header h1{font-size:16px;font-weight:600}
+.header p{font-size:11px;opacity:.8;margin-top:2px}
+.header-credit{font-size:9px;opacity:.75;margin-top:2px;font-style:italic}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header-user{display:flex;flex-direction:column;align-items:flex-end;margin-right:4px}
+.header-user b{font-size:13px}
+.header-user span{font-size:10px;opacity:.85}
+.icon-btn{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:5px}
+.icon-btn:hover{background:rgba(255,255,255,.28)}
+.switch{position:relative;display:inline-block;width:38px;height:20px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.25);transition:.2s;border-radius:20px}
+.slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;transition:.2s;border-radius:50%}
+.switch input:checked+.slider{background:#1a7a3f}
+.switch input:checked+.slider:before{transform:translateX(18px)}
+.toggle-wrap{display:flex;align-items:center;gap:6px;font-size:11px}
+.main{max-width:1320px;margin:0 auto;padding:12px}
+
+/* controls */
+.controls{background:var(--card);border-radius:10px;padding:11px 14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ctrl-group{display:flex;align-items:center;gap:5px}
+.ctrl-group label{font-size:11px;color:var(--sub);white-space:nowrap}
+.ctrl-group input[type=date],.ctrl-group input[type=number]{font-size:12px;padding:4px 7px;border-radius:6px;border:1px solid #ccc;background:#fafafa;color:#222}
+.ctrl-group input[type=number]{width:56px}
+.ph-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub);cursor:pointer}
+.ph-toggle input{cursor:pointer;accent-color:#1a7a3f;width:14px;height:14px}
+.divider{width:1px;height:24px;background:#ddd;margin:0 2px}
+.btn{padding:6px 12px;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn-export{background:#1F4E79;color:#fff}.btn-export:hover{background:#2E75B6}
+.btn-clear{background:#dc3545;color:#fff}.btn-clear:hover{background:#b02a37}
+.btn-logout{background:#6c757d;color:#fff}.btn-logout:hover{background:#565e64}
+
+/* balance settings */
+.bal-settings{background:var(--card);border-radius:10px;padding:11px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.bal-settings-title{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.bal-settings-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.bsi{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
+.bsi input[type=number]{width:60px;font-size:12px;padding:4px 7px;border-radius:6px;border:1px solid #ccc;background:#fafafa;color:#222}
+.bsi-note{font-size:10px;color:var(--muted);margin-left:2px}
+
+/* balance panel */
+.balance-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.bal-card{background:var(--card);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.bal-title{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:7px}
+.bal-rows{display:flex;flex-direction:column;gap:4px}
+.bal-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.bal-row span:first-child{color:var(--sub)}
+.bal-row span:last-child{font-weight:700;font-size:14px}
+.ok{color:#1a7a3f}.warn{color:#b06800}.danger{color:#8b0000}
+.bonus-color{color:#0d6e6e}
+.bal-bar-wrap{background:#e9ecef;border-radius:4px;height:6px;margin:3px 0 2px;overflow:hidden}
+.bal-bar{height:100%;border-radius:4px;transition:width .3s}
+.bar-green{background:#28a745}.bar-orange{background:#fd7e14}.bar-red{background:#dc3545}
+.bal-note{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px}
+.stat{background:var(--card);border-radius:10px;padding:9px 12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:2px}
+.stat-val{font-size:21px;font-weight:700}
+.v-work{color:#1a7a3f}.v-half{color:#6c3483}.v-leave{color:#b06800}
+.v-ph{color:#8b0000}.v-acc{color:#185FA5}.v-bonus{color:#0d6e6e}.v-ot{color:#b05a00}
+
+/* legend */
+.legend{background:var(--card);border-radius:10px;padding:8px 14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub)}
+.dot{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.d-work{background:#d4edda;border:1px solid #28a745}
+.d-half{background:#e8d5f5;border:1px solid #8e44ad}
+.d-leave-full{background:#fff3cd;border:1px solid #e6ac00}
+.d-leave-half{background:#fef9e7;border:2px dashed #e6ac00}
+.d-ph{background:#f8d7da;border:1px solid #c0392b}
+.d-ph-att{background:#cce5ff;border:1px solid #004085}
+.d-fri{background:#e9ecef;border:1px solid #adb5bd}
+
+/* table */
+.table-wrap{background:var(--card);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:auto;max-height:72vh}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
+th{background:#1F4E79;color:#fff;padding:7px 6px;text-align:center;font-weight:500;font-size:11px;position:sticky;top:0;z-index:2;white-space:nowrap}
+td{padding:4px 6px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:hover td{filter:brightness(.97)}
+tr.r-work{background:#d4edda}tr.r-work td{color:#145a32}
+tr.r-leave-full{background:#fff3cd}tr.r-leave-full td{color:#7d5a00}
+tr.r-leave-half{background:repeating-linear-gradient(45deg,#fff9e6,#fff9e6 5px,#fff3cd 5px,#fff3cd 10px)}
+tr.r-leave-half td{color:#7d5a00}
+tr.r-ph{background:#f8d7da}tr.r-ph td{color:#7b241c}
+tr.r-ph-att{background:#cce5ff}tr.r-ph-att td{color:#003f7f}
+tr.r-fri{background:#e9ecef}tr.r-fri td{color:#888}
+tr.r-half-att{background:#e8d5f5}tr.r-half-att td{color:#512e5f}
+tr.r-base{background:var(--card)}
+.today-row{outline:2px solid #2E75B6;outline-offset:-1px}
+.td-date{font-weight:600;white-space:nowrap}
+.td-note{font-size:10px;line-height:1.3}
+.td-phname{font-size:10px;line-height:1.3;max-width:120px}
+.badge{display:inline-block;font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(0,0,0,.09);margin-left:2px}
+.bonus-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;background:#0d6e6e;color:#fff;margin-left:3px}
+.td-center{text-align:center}
+.chk,.chk-half-att{width:15px;height:15px;cursor:pointer}
+.chk{accent-color:#28a745}.chk-half-att{accent-color:#8e44ad}
+input[type=checkbox]:disabled{opacity:.3;cursor:not-allowed}
+.ot-input{width:54px;font-size:11px;padding:3px 5px;border-radius:5px;border:1px solid #ccc;background:#fafafa;color:#222;text-align:center}
+
+/* leave taken controls */
+.leave-ctrl{display:flex;flex-direction:column;gap:3px;align-items:center}
+.lc-row{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
+.leave-amt{display:flex;gap:2px}
+.lamt-btn{padding:1px 6px;font-size:10px;border-radius:3px;border:1px solid #ccc;background:#fafafa;cursor:pointer;color:#555;transition:.15s}
+.lamt-btn.active-full{background:#e6ac00;color:#fff;border-color:#b07800;font-weight:700}
+.lamt-btn.active-half{background:#fef3c7;color:#92610a;border-color:#e6ac00;font-weight:700}
+.lamt-btn:disabled{opacity:.3;cursor:not-allowed}
+
+select.leave-sel{font-size:10px;padding:2px 4px;border-radius:4px;border:1px solid #ccc;background:#fafafa;color:#222;width:88px}
+select.leave-sel:disabled{opacity:.35;cursor:not-allowed}
+
+/* footer */
+.footer{margin-top:18px;padding:14px 20px;text-align:center;font-size:11px;color:#777;background:#fff;border-top:1px solid #e9ecef}
+.footer b{color:#1F4E79}
+
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:22px 26px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h3{font-size:15px;margin-bottom:14px;color:#1F4E79}
+.modal p{font-size:13px;color:#555;margin-bottom:16px;line-height:1.5}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{padding:7px 16px;border-radius:6px;border:none;font-size:13px;cursor:pointer;font-weight:600}
+.btn-cancel{background:#e9ecef;color:#444}.btn-cancel:hover{background:#ddd}
+.btn-confirm{background:#dc3545;color:#fff}.btn-confirm:hover{background:#b02a37}
+
+/* auth screen */
+.auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1F4E79,#2E75B6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.auth-box{background:#fff;border-radius:14px;padding:28px 30px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.auth-tabs{display:flex;gap:0;margin-bottom:18px;border-radius:8px;overflow:hidden;border:1px solid #ddd}
+.auth-tab{flex:1;text-align:center;padding:9px;font-size:13px;font-weight:600;cursor:pointer;background:#f4f6f8;color:#666}
+.auth-tab.active{background:#1F4E79;color:#fff}
+.auth-title{font-size:17px;font-weight:700;color:#1F4E79;margin-bottom:4px;text-align:center}
+.auth-sub{font-size:11px;color:#888;text-align:center;margin-bottom:18px}
+.auth-field{margin-bottom:12px}
+.auth-field label{display:block;font-size:11px;color:#555;margin-bottom:4px;font-weight:600}
+.auth-field input,.auth-field select{width:100%;padding:8px 10px;border-radius:7px;border:1px solid #ccc;font-size:13px;background:#fafafa;color:#222}
+.auth-error{color:#c0392b;font-size:11.5px;margin-bottom:10px;min-height:14px}
+.auth-btn{width:100%;padding:10px;border:none;border-radius:8px;background:#1F4E79;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
+.auth-btn:hover{background:#2E75B6}
+.auth-panel{display:none}
+.auth-panel.active{display:block}
+body.dark .auth-box{background:#1b232e;color:#e8eaed}
+body.dark .auth-field input,body.dark .auth-field select{background:#222c38;color:#e8eaed;border-color:#3a4654}
+
+[dir="rtl"] .header-right{margin-left:0;margin-right:auto}
+[dir="rtl"] .header-user{align-items:flex-start}
+[dir="rtl"] .bal-row,[dir="rtl"] .leg,[dir="rtl"] .ctrl-group{direction:rtl}
+
+/* responsive / mobile */
+@media (max-width:760px){
+  .header{padding:10px 12px;gap:8px}
+  .header h1{font-size:14px}
+  .header-right{width:100%;justify-content:space-between;margin:0;order:3}
+  .balance-panel{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat-val{font-size:18px}
+  .auth-box{padding:20px 18px}
+  .controls{padding:9px 10px}
+  .ctrl-group input[type=number]{width:48px}
+  table{min-width:760px}
+  .footer{font-size:10px;padding:10px}
+}
+@media (max-width:420px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .header-user{display:none}
+  .toggle-wrap span{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-overlay" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-title" data-i18n="appTitle">Egypt Attendance Tracker</div>
+    <div class="auth-sub" data-i18n="authSub">Sign in to your account or create a new one</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')" data-i18n="loginTab">Login</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')" data-i18n="signupTab">Sign Up</div>
+    </div>
+
+    <div class="auth-panel active" id="panelLogin">
+      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="loginEmpId" autocomplete="username"></div>
+      <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="loginPassword" autocomplete="current-password"></div>
+      <div class="auth-error" id="loginError"></div>
+      <button class="auth-btn" onclick="doLogin()" data-i18n="loginBtn">Login</button>
+    </div>
+
+    <div class="auth-panel" id="panelSignup">
+      <div class="auth-field"><label data-i18n="fullName">Full Name</label><input type="text" id="suName"></div>
+      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="suEmpId"></div>
+      <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="suPassword"></div>
+      <div class="auth-field"><label data-i18n="role">Job Role</label>
+        <select id="suRole">
+          <option value="Site Manager">Site Manager</option>
+          <option value="Construction Manager">Construction Manager</option>
+          <option value="Section Head">Section Head</option>
+          <option value="Team Leader">Team Leader</option>
+          <option value="Senior">Senior</option>
+          <option value="Junior">Junior</option>
+        </select>
+      </div>
+      <div class="auth-error" id="signupError"></div>
+      <button class="auth-btn" onclick="doSignup()" data-i18n="signupBtn">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- confirm clear modal -->
+<div class="modal-overlay" id="clearModal">
+  <div class="modal">
+    <h3 data-i18n="clearTitle">Clear all data?</h3>
+    <p data-i18n="clearBody">This will reset all checkmarks, attendance, leave records and restore defaults. This cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('clearModal').classList.remove('open')" data-i18n="cancel">Cancel</button>
+      <button class="btn-confirm" onclick="confirmClear()" data-i18n="clearConfirm">Yes, clear all</button>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  <div>
+    <h1 id="headerTitle">Egypt Attendance Tracker</h1>
+    <p data-i18n="headerSub">Work/leave cycle &bull; Annual leave balance &bull; Public holiday bonus</p>
+    <p class="header-credit" data-i18n="headerCredit">By Eng. Mohamed Metwaly</p>
+  </div>
+  <div class="header-right">
+    <div class="toggle-wrap">
+      <span id="langLabel">EN</span>
+      <label class="switch"><input type="checkbox" id="langToggle"><span class="slider"></span></label>
+      <span>AR</span>
+    </div>
+    <div class="toggle-wrap">
+      <span>&#9728;</span>
+      <label class="switch"><input type="checkbox" id="darkToggle"><span class="slider"></span></label>
+      <span>&#127769;</span>
+    </div>
+    <div class="header-user">
+      <b id="headerUserName">—</b>
+      <span id="headerUserRole">—</span>
+    </div>
+    <button class="icon-btn btn-logout" onclick="doLogout()" data-i18n="logout">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- cycle settings -->
+  <div class="controls">
+    <div class="ctrl-group"><label data-i18n="startDate">Start date</label><input type="date" id="startDate"></div>
+    <div class="ctrl-group"><label data-i18n="workDaysCycle">Work days/cycle</label><input type="number" id="workDays" value="24" min="1" max="90"></div>
+    <div class="ctrl-group"><label data-i18n="leaveDaysCycle">Leave days/cycle</label><input type="number" id="leaveDays" value="6" min="1" max="60"></div>
+    <label class="ph-toggle"><input type="checkbox" id="phAsWork" checked> <span data-i18n="phAsWork">Count public holidays in cycle</span></label>
+    <div class="divider"></div>
+    <button class="btn btn-clear" onclick="document.getElementById('clearModal').classList.add('open')">&#10006; <span data-i18n="clearAll">Clear all</span></button>
+    <button class="btn btn-export" onclick="exportCyclePDF()">&#8659; <span data-i18n="exportPdf">Export PDF</span></button>
+  </div>
+
+  <!-- annual leave settings -->
+  <div class="bal-settings">
+    <div class="bal-settings-title">&#128203; <span data-i18n="balSettingsTitle">Annual leave balance settings</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px" data-i18n="balSettingsHint">— set your actual entitlement</span></div>
+    <div class="bal-settings-row">
+      <div class="bsi"><label data-i18n="regDays">Regular leave days</label><input type="number" id="regMax" value="15" min="0" max="60" step="0.5"><span class="bsi-note" data-i18n="perYear">days/year</span></div>
+      <div class="bsi"><label data-i18n="emDays">Emergency leave days</label><input type="number" id="emMax" value="6" min="0" max="30"><span class="bsi-note" data-i18n="perYear">days/year</span></div>
+      <div class="bsi"><label data-i18n="carryOver">Carried over from last year</label><input type="number" id="carryOver" value="0" min="0" max="60"><span class="bsi-note" data-i18n="days">days</span></div>
+    </div>
+  </div>
+
+  <!-- balance panel -->
+  <div class="balance-panel">
+    <div class="bal-card">
+      <div class="bal-title">&#128196; <span data-i18n="annualBalance">Annual leave balance</span></div>
+      <div class="bal-rows">
+        <div class="bal-row"><span data-i18n="regularLeave">Regular leave</span><span id="b-reg-used">0</span></div>
+        <div class="bal-bar-wrap"><div class="bal-bar bar-green" id="bar-reg" style="width:0%"></div></div>
+        <div class="bal-row"><span data-i18n="remainingReg">Remaining regular</span><span id="b-reg-rem" class="ok">15</span></div>
+      </div>
+      <div class="bal-rows" style="margin-top:8px">
+        <div class="bal-row"><span data-i18n="emergencyLeave">Emergency leave</span><span id="b-em-used">0</span></div>
+        <div class="bal-bar-wrap"><div class="bal-bar bar-orange" id="bar-em" style="width:0%"></div></div>
+        <div class="bal-row"><span data-i18n="remainingEm">Remaining emergency</span><span id="b-em-rem" class="ok">6</span></div>
+      </div>
+      <div class="bal-note" id="bal-note" data-i18n="balNoteDefault">Mark leave days in the table below and select type.</div>
+    </div>
+    <div class="bal-card" id="phBonusCard">
+      <div class="bal-title">&#127942; <span data-i18n="phBonusTitle">Public holiday bonus</span></div>
+      <div class="bal-rows">
+        <div class="bal-row"><span data-i18n="phDaysAttended">PH days attended</span><span id="b-ph-att" class="bonus-color">0</span></div>
+        <div class="bal-row"><span data-i18n="bonusEarned">Bonus days earned</span><span id="b-bonus" class="bonus-color" style="font-size:14px;font-weight:700">+0</span></div>
+        <div class="bal-row" style="margin-top:4px"><span data-i18n="effRegTotal">Effective regular total</span><span id="b-eff-reg" class="ok" style="font-size:14px">15</span></div>
+        <div class="bal-row"><span data-i18n="effRem">Effective remaining</span><span id="b-eff-rem" class="ok" style="font-size:14px">15</span></div>
+      </div>
+      <div class="bal-note" id="phBonusNote" data-i18n="phBonusNote">Each public holiday you attend (excluding Fridays) adds +1 compensatory day to your regular balance.</div>
+    </div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats" id="statsGrid">
+    <div class="stat"><div class="stat-label" data-i18n="daysAttended">Days attended</div><div class="stat-val v-work" id="s-work">0</div></div>
+    <div class="stat"><div class="stat-label" data-i18n="halfDays">Half days (attendance)</div><div class="stat-val v-half" id="s-half">0</div></div>
+    <div class="stat"><div class="stat-label" data-i18n="fullLeave">Full leave days</div><div class="stat-val v-leave" id="s-leave-full">0</div></div>
+    <div class="stat"><div class="stat-label" data-i18n="halfLeave">Half leave days</div><div class="stat-val v-leave" id="s-leave-half">0</div></div>
+    <div class="stat" id="phBonusStat"><div class="stat-label" data-i18n="phBonusDays">PH bonus days</div><div class="stat-val v-bonus" id="s-phatt">0</div></div>
+    <div class="stat"><div class="stat-label" data-i18n="dayOffUsed">Cycle day-off taken</div><div class="stat-val v-leave" id="s-dayoff">0</div></div>
+    <div class="stat" id="otStatCard" style="display:none"><div class="stat-label" data-i18n="otHoursPeriod">OT hours (current period)</div><div class="stat-val v-ot" id="s-ot-period">0</div></div>
+    <div class="stat" id="otStatCard2" style="display:none"><div class="stat-label" data-i18n="otHoursWeighted">OT weighted hours (period)</div><div class="stat-val v-ot" id="s-ot-weighted">0</div></div>
+    <div class="stat"><div class="stat-label" data-i18n="daysLeftCycle">Days left in cycle</div><div class="stat-val v-acc" id="s-rem">—</div></div>
+    <div class="stat"><div class="stat-label" data-i18n="nextLeaveStarts">Next leave starts</div><div class="stat-val" id="s-next" style="font-size:12px;padding-top:5px;color:var(--sub)">—</div></div>
+  </div>
+
+  <!-- legend -->
+  <div class="legend">
+    <span class="leg"><span class="dot d-work"></span><span data-i18n="legWork">Attended (full)</span></span>
+    <span class="leg"><span class="dot d-half"></span><span data-i18n="legHalf">Attended (half)</span></span>
+    <span class="leg"><span class="dot d-leave-full"></span><span data-i18n="legLeaveFull">Leave taken (full day)</span></span>
+    <span class="leg"><span class="dot d-leave-half"></span><span data-i18n="legLeaveHalf">Leave taken (half day)</span></span>
+    <span class="leg"><span class="dot d-ph"></span><span data-i18n="legPh">Public holiday (off)</span></span>
+    <span class="leg"><span class="dot d-ph-att"></span><span data-i18n="legPhAtt">PH attended → +1 balance</span></span>
+    <span class="leg"><span class="dot d-fri"></span><span data-i18n="legFri">Friday</span></span>
+  </div>
+
+  <!-- table -->
+  <div class="table-wrap">
+    <table>
+      <thead><tr id="tableHeadRow">
+        <th>#</th><th data-i18n="thDate">Date</th><th data-i18n="thDay">Day</th><th data-i18n="thCycleType">Cycle type</th><th data-i18n="thPh">Public holiday</th><th data-i18n="thNote">Note</th>
+        <th data-i18n="thAttended">Attended</th><th data-i18n="thHalfAtt">Half att.</th><th data-i18n="thLeaveTaken">Leave taken<br><span style="font-size:9px;opacity:.8" data-i18n="thFullHalf">Full / Half</span></th><th data-i18n="thLeaveType">Leave type</th>
+        <th id="thOt" style="display:none" data-i18n="thOt">OT hours</th>
+      </tr></thead>
+      <tbody id="calBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  &copy; <span id="footerYear"></span> Atrium Attendance Tracker - By Eng. Mohamed Metwaly
+</div>
+
+<script>
+const EG_HOLIDAYS={
+  "2025-01-07":"Coptic Christmas",
+  "2025-03-30":"Eid Al-Fitr holiday","2025-03-31":"Eid Al-Fitr (day 1)","2025-04-01":"Eid Al-Fitr (day 2)","2025-04-02":"Eid Al-Fitr (day 3)","2025-04-03":"Eid Al-Fitr holiday",
+  "2025-04-20":"Coptic Easter","2025-04-21":"Sham El Nessim","2025-04-24":"Sinai Liberation Day (lieu)","2025-04-25":"Sinai Liberation Day",
+  "2025-05-01":"Labour Day","2025-06-05":"Arafat Day","2025-06-06":"Eid Al-Adha (day 1)","2025-06-07":"Eid Al-Adha (day 2)","2025-06-08":"Eid Al-Adha (day 3)","2025-06-09":"Eid Al-Adha (day 4)",
+  "2025-06-26":"Islamic New Year","2025-07-03":"Revolution Day Jun 30 (lieu)","2025-07-24":"Revolution Day Jul 23 (lieu)","2025-09-04":"Prophet Birthday","2025-10-06":"Armed Forces Day",
+  "2026-01-07":"Coptic Christmas","2026-01-29":"Revolution Day Jan 25 (lieu)",
+  "2026-03-19":"Eid Al-Fitr holiday","2026-03-20":"Eid Al-Fitr (day 1)","2026-03-21":"Eid Al-Fitr (day 2)","2026-03-22":"Eid Al-Fitr (day 3)","2026-03-23":"Eid Al-Fitr (day 4)",
+  "2026-04-12":"Coptic Easter","2026-04-13":"Sham El Nessim","2026-04-25":"Sinai Liberation Day","2026-05-07":"Labour Day (lieu)",
+  "2026-05-26":"Arafat Day","2026-05-27":"Eid Al-Adha (day 1)","2026-05-28":"Eid Al-Adha (day 2)","2026-05-29":"Eid Al-Adha (day 3)","2026-05-30":"Eid Al-Adha (day 4)","2026-05-31":"Eid Al-Adha (day 5)",
+  "2026-06-18":"Islamic New Year","2026-07-02":"Revolution Day Jun 30","2026-07-23":"Revolution Day Jul 23","2026-08-25":"Prophet Birthday","2026-10-09":"Armed Forces Day"
+};
+const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const DAYS_AR=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const ROLES_HOURLY=["Senior","Junior"]; // overtime tracking roles
+
+const I18N={
+  en:{
+    appTitle:"Egypt Attendance Tracker",authSub:"Sign in to your account or create a new one",
+    loginTab:"Login",signupTab:"Sign Up",empId:"Employee ID",password:"Password",loginBtn:"Login",
+    fullName:"Full Name",role:"Job Role",signupBtn:"Create Account",
+    headerSub:"Work/leave cycle • Annual leave balance • Public holiday bonus",
+    headerCredit:"By Eng. Mohamed Metwaly",logout:"Logout",
+    startDate:"Start date",workDaysCycle:"Work days/cycle",leaveDaysCycle:"Leave days/cycle",
+    phAsWork:"Count public holidays in cycle",clearAll:"Clear all",exportPdf:"Export PDF",
+    balSettingsTitle:"Annual leave balance settings",balSettingsHint:"— set your actual entitlement",
+    regDays:"Regular leave days",emDays:"Emergency leave days",carryOver:"Carried over from last year",
+    perYear:"days/year",days:"days",
+    annualBalance:"Annual leave balance",regularLeave:"Regular leave",remainingReg:"Remaining regular",
+    emergencyLeave:"Emergency leave",remainingEm:"Remaining emergency",
+    balNoteDefault:"Mark leave days in the table below and select type.",
+    phBonusTitle:"Public holiday bonus",phDaysAttended:"PH days attended",bonusEarned:"Bonus days earned",
+    effRegTotal:"Effective regular total",effRem:"Effective remaining",
+    phBonusNote:"Each public holiday you attend (excluding Fridays) adds +1 compensatory day to your regular balance.",
+    daysAttended:"Days attended",halfDays:"Half days (attendance)",fullLeave:"Full leave days",halfLeave:"Half leave days",
+    phBonusDays:"PH bonus days",otHoursPeriod:"OT hours (current period)",otHoursWeighted:"OT weighted hours (period)",
+    daysLeftCycle:"Days left in cycle",nextLeaveStarts:"Next leave starts",
+    legWork:"Attended (full)",legHalf:"Attended (half)",legLeaveFull:"Leave taken (full day)",legLeaveHalf:"Leave taken (half day)",
+    legPh:"Public holiday (off)",legPhAtt:"PH attended → +1 balance",legFri:"Friday",
+    thDate:"Date",thDay:"Day",thCycleType:"Cycle type",thPh:"Public holiday",thNote:"Note",thAttended:"Attended",
+    thHalfAtt:"Half att.",thLeaveTaken:"Leave taken",thFullHalf:"Full / Half",thLeaveType:"Leave type",thOt:"OT hours",
+    clearTitle:"Clear all data?",clearBody:"This will reset all checkmarks, attendance, leave records and restore defaults. This cannot be undone.",
+    cancel:"Cancel",clearConfirm:"Yes, clear all",
+    errFill:"Please fill in all fields.",errExists:"This Employee ID already has an account.",errLogin:"Invalid employee ID or password.",
+    dayOffUsed:"Cycle day-off taken",leaveTypeRegular:"Regular",leaveTypeEmergency:"Emergency",leaveTypeDayOff:"Day Off (Cycle)",
+  },
+  ar:{
+    appTitle:"متابعة الحضور والإجازات - مصر",authSub:"سجّل دخولك أو أنشئ حساب جديد",
+    loginTab:"تسجيل الدخول",signupTab:"إنشاء حساب",empId:"كود الموظف",password:"كلمة السر",loginBtn:"دخول",
+    fullName:"اسم المستخدم",role:"الوظيفة",signupBtn:"إنشاء الحساب",
+    headerSub:"دورة العمل والإجازة • رصيد الإجازة السنوي • بونص الإجازات الرسمية",
+    headerCredit:"بواسطة م. محمد متولي",logout:"تسجيل خروج",
+    startDate:"تاريخ البداية",workDaysCycle:"أيام العمل/الدورة",leaveDaysCycle:"أيام الإجازة/الدورة",
+    phAsWork:"حساب الإجازات الرسمية ضمن الدورة",clearAll:"حذف الكل",exportPdf:"تصدير PDF",
+    balSettingsTitle:"إعدادات رصيد الإجازة السنوي",balSettingsHint:"— حدد رصيدك الفعلي",
+    regDays:"أيام الإجازة العادية",emDays:"أيام إجازة الطوارئ",carryOver:"مرحّل من العام السابق",
+    perYear:"يوم/سنة",days:"يوم",
+    annualBalance:"رصيد الإجازة السنوي",regularLeave:"إجازة عادية",remainingReg:"المتبقي من العادية",
+    emergencyLeave:"إجازة طوارئ",remainingEm:"المتبقي من الطوارئ",
+    balNoteDefault:"حدد أيام الإجازة في الجدول وحدد النوع.",
+    phBonusTitle:"بونص الإجازات الرسمية",phDaysAttended:"أيام الإجازات الرسمية المحضورة",bonusEarned:"أيام البونص المكتسبة",
+    effRegTotal:"إجمالي الرصيد العادي الفعلي",effRem:"المتبقي الفعلي",
+    phBonusNote:"كل إجازة رسمية (غير الجمعة) يتم حضورها تضيف يوم بدل إلى رصيد الإجازة العادي.",
+    daysAttended:"أيام الحضور",halfDays:"أيام حضور نصف يوم",fullLeave:"أيام إجازة كاملة",halfLeave:"أيام إجازة نصف يوم",
+    phBonusDays:"أيام بونص الإجازات الرسمية",otHoursPeriod:"ساعات الأوفر تايم (الفترة الحالية)",otHoursWeighted:"ساعات الأوفر تايم المحسوبة (الفترة)",
+    daysLeftCycle:"الأيام المتبقية في الدورة",nextLeaveStarts:"بداية الإجازة القادمة",
+    legWork:"حضور (يوم كامل)",legHalf:"حضور (نصف يوم)",legLeaveFull:"إجازة (يوم كامل)",legLeaveHalf:"إجازة (نصف يوم)",
+    legPh:"إجازة رسمية (عطلة)",legPhAtt:"حضور إجازة رسمية ← +1 للرصيد",legFri:"الجمعة",
+    thDate:"التاريخ",thDay:"اليوم",thCycleType:"نوع اليوم",thPh:"إجازة رسمية",thNote:"ملاحظة",thAttended:"الحضور",
+    thHalfAtt:"حضور نصف يوم",thLeaveTaken:"الإجازة المأخوذة",thFullHalf:"كامل / نصف",thLeaveType:"نوع الإجازة",thOt:"ساعات إضافية",
+    clearTitle:"حذف كل البيانات؟",clearBody:"سيتم إعادة ضبط كل علامات الحضور والإجازات والإعدادات الافتراضية. لا يمكن التراجع عن هذا.",
+    cancel:"إلغاء",clearConfirm:"نعم، حذف الكل",
+    errFill:"من فضلك أدخل كل البيانات المطلوبة.",errExists:"يوجد حساب بهذا الكود من قبل.",errLogin:"كود الموظف أو كلمة السر غير صحيحة.",
+    dayOffUsed:"أيام راحة الدورة المستخدمة",leaveTypeRegular:"عادية",leaveTypeEmergency:"طوارئ",leaveTypeDayOff:"يوم راحة (دورة)",
+  }
+};
+let curLang=localStorage.getItem("eg_lang")||"en";
+let curDark=localStorage.getItem("eg_dark")==="1";
+
+function t(key){return (I18N[curLang]&&I18N[curLang][key])||I18N.en[key]||key;}
+
+function applyI18n(){
+  document.documentElement.lang=curLang;
+  document.documentElement.dir=curLang==="ar"?"rtl":"ltr";
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k=el.getAttribute("data-i18n");
+    if(I18N[curLang]&&I18N[curLang][k]!==undefined) el.textContent=I18N[curLang][k];
+  });
+  document.getElementById("langLabel").textContent=curLang==="ar"?"AR":"EN";
+  document.getElementById("langToggle").checked=curLang==="ar";
+  updateHeaderUser();
+  if(rows.length) render();
+}
+
+function applyDark(){
+  document.body.classList.toggle("dark",curDark);
+  document.getElementById("darkToggle").checked=curDark;
+}
+
+document.getElementById("langToggle").addEventListener("change",function(){
+  curLang=this.checked?"ar":"en";
+  localStorage.setItem("eg_lang",curLang);
+  applyI18n();
+});
+document.getElementById("darkToggle").addEventListener("change",function(){
+  curDark=this.checked;
+  localStorage.setItem("eg_dark",curDark?"1":"0");
+  applyDark();
+});
+
+/* ---------------- AUTH ---------------- */
+const ACCOUNTS_KEY="eg_accounts_v3";
+const SESSION_KEY="eg_session_v3";
+
+function getAccounts(){ try{return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||"{}");}catch(e){return {};} }
+function saveAccounts(a){ localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(a)); }
+function getSession(){ return localStorage.getItem(SESSION_KEY)||""; }
+function setSession(empId){ localStorage.setItem(SESSION_KEY,empId); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+let currentUser=null; // {empId, fullName, role}
+
+function switchAuthTab(which){
+  document.getElementById("tabLogin").classList.toggle("active",which==="login");
+  document.getElementById("tabSignup").classList.toggle("active",which==="signup");
+  document.getElementById("panelLogin").classList.toggle("active",which==="login");
+  document.getElementById("panelSignup").classList.toggle("active",which==="signup");
+  document.getElementById("loginError").textContent="";
+  document.getElementById("signupError").textContent="";
+}
+
+function doSignup(){
+  const name=document.getElementById("suName").value.trim();
+  const empId=document.getElementById("suEmpId").value.trim();
+  const pass=document.getElementById("suPassword").value;
+  const role=document.getElementById("suRole").value;
+  const err=document.getElementById("signupError");
+  if(!name||!empId||!pass||!role){ err.textContent=t("errFill"); return; }
+  const accounts=getAccounts();
+  if(accounts[empId]){ err.textContent=t("errExists"); return; }
+  accounts[empId]={fullName:name,password:pass,role:role};
+  saveAccounts(accounts);
+  setSession(empId);
+  enterApp(empId,accounts[empId]);
+}
+
+function doLogin(){
+  const empId=document.getElementById("loginEmpId").value.trim();
+  const pass=document.getElementById("loginPassword").value;
+  const err=document.getElementById("loginError");
+  if(!empId||!pass){ err.textContent=t("errFill"); return; }
+  const accounts=getAccounts();
+  const acc=accounts[empId];
+  if(!acc||acc.password!==pass){ err.textContent=t("errLogin"); return; }
+  setSession(empId);
+  enterApp(empId,acc);
+}
+
+function doLogout(){
+  clearSession();
+  currentUser=null;
+  document.getElementById("authScreen").style.display="flex";
+  document.querySelector(".main").style.display="none";
+  document.querySelector(".header").style.visibility="hidden";
+  document.querySelector(".footer").style.visibility="hidden";
+  document.getElementById("loginEmpId").value="";
+  document.getElementById("loginPassword").value="";
+}
+
+function updateHeaderUser(){
+  if(!currentUser)return;
+  document.getElementById("headerUserName").textContent=currentUser.fullName;
+  document.getElementById("headerUserRole").textContent=currentUser.role;
+  document.getElementById("headerTitle").textContent=currentUser.fullName;
+}
+
+function resetDefaults(){
+  document.getElementById("startDate").value=new Date().getFullYear()+"-01-01";
+  document.getElementById("workDays").value=24;
+  document.getElementById("leaveDays").value=6;
+  document.getElementById("phAsWork").checked=true;
+  document.getElementById("regMax").value=15;
+  document.getElementById("emMax").value=6;
+  document.getElementById("carryOver").value=0;
+  attended={}; halfAtt={}; leaveAmt={}; leaveType={}; otHours={};
+}
+
+function enterApp(empId,acc){
+  currentUser={empId,fullName:acc.fullName,role:acc.role};
+  document.getElementById("authScreen").style.display="none";
+  document.querySelector(".main").style.display="block";
+  document.querySelector(".header").style.visibility="visible";
+  document.querySelector(".footer").style.visibility="visible";
+  updateHeaderUser();
+  setupRoleUI();
+  STORE="eg_att_v4_"+empId;
+  resetDefaults();
+  load(); render();
+}
+
+function isHourlyRole(){ return currentUser && ROLES_HOURLY.includes(currentUser.role); }
+
+function setupRoleUI(){
+  const hourly=isHourlyRole();
+  document.getElementById("thOt").style.display=hourly?"":"none";
+  document.getElementById("otStatCard").style.display=hourly?"":"none";
+  document.getElementById("otStatCard2").style.display=hourly?"":"none";
+  document.getElementById("phBonusCard").style.display=hourly?"none":"";
+  document.getElementById("phBonusStat").style.display=hourly?"none":"";
+}
+
+/* ---------------- DATA ---------------- */
+let STORE="eg_att_v4";
+let rows=[];
+let attended={}, halfAtt={}, leaveAmt={}, leaveType={}, otHours={};
+
+function getSettings(){
+  return {
+    regMax:parseFloat(document.getElementById("regMax").value)||15,
+    emMax:parseInt(document.getElementById("emMax").value)||6,
+    carryOver:parseInt(document.getElementById("carryOver").value)||0,
+    workDays:parseInt(document.getElementById("workDays").value)||24,
+    leaveDays:parseInt(document.getElementById("leaveDays").value)||6,
+    phAsWork:document.getElementById("phAsWork").checked,
+    startDate:document.getElementById("startDate").value
+  };
+}
+
+function save(){
+  try{
+    const s=getSettings();
+    localStorage.setItem(STORE,JSON.stringify({...s,attended,halfAtt,leaveAmt,leaveType,otHours}));
+  }catch(e){}
+}
+
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(STORE)||"{}");
+    if(d.startDate) document.getElementById("startDate").value=d.startDate;
+    if(d.workDays)  document.getElementById("workDays").value=d.workDays;
+    if(d.leaveDays) document.getElementById("leaveDays").value=d.leaveDays;
+    if(d.phAsWork!==undefined) document.getElementById("phAsWork").checked=d.phAsWork;
+    if(d.regMax!==undefined)   document.getElementById("regMax").value=d.regMax;
+    if(d.emMax!==undefined)    document.getElementById("emMax").value=d.emMax;
+    if(d.carryOver!==undefined)document.getElementById("carryOver").value=d.carryOver;
+    attended=d.attended||{}; halfAtt=d.halfAtt||{};
+    leaveAmt=d.leaveAmt||{}; leaveType=d.leaveType||{};
+    otHours=d.otHours||{};
+  }catch(e){}
+}
+
+function confirmClear(){
+  attended={}; halfAtt={}; leaveAmt={}; leaveType={}; otHours={};
+  document.getElementById("clearModal").classList.remove("open");
+  save(); render();
+}
+
+function isoDate(d){return d.toISOString().slice(0,10);}
+function fmtDate(d){return d.toLocaleDateString(curLang==="ar"?"ar-EG":"en-GB",{day:"2-digit",month:"short",year:"numeric"});}
+
+function buildRows(){
+  const {startDate,workDays:W,leaveDays:L,phAsWork}=getSettings();
+  const start=new Date(startDate);
+  if(isNaN(start))return;
+  const cycle=W+L;
+  rows=[]; let nonFri=0;
+  for(let i=0;i<365;i++){
+    const d=new Date(start); d.setDate(d.getDate()+i);
+    const iso=isoDate(d); const dow=d.getDay(); const isFri=dow===5;
+    const phName=EG_HOLIDAYS[iso]||null; const isPH=!!phName;
+    let cycleType="",cls="r-base",note="",cyclePos=null,seqN=null;
+    if(isFri){cycleType="Friday";cls="r-fri";note="Weekly off";}
+    else{
+      const countThis=phAsWork||!isPH;
+      if(countThis) nonFri++;
+      if(!phAsWork&&isPH){cycleType="Public holiday";cls="r-ph";note="Official holiday";}
+      else{
+        cyclePos=((nonFri-1)%cycle)+1; seqN=nonFri;
+        if(cyclePos<=W){
+          cycleType=isPH?"Work day (PH)":"Work day";
+          cls=isPH?"r-ph":"r-work";
+          note=(isPH?"PH — ":"")+"Day "+cyclePos+" of "+W;
+        } else {
+          cycleType="Leave day";cls="r-leave-full";
+          note="Cycle leave "+(cyclePos-W)+" of "+L;
+        }
+      }
+    }
+    const cycleNum=Math.floor(Math.max(nonFri-1,0)/cycle);
+    rows.push({d,iso,dow,isFri,phName,isPH,cycleType,cls,note,cyclePos,seqN,W,L,cycleNum});
+  }
+}
+
+function getRowClass(r){
+  const att=attended[r.iso]||false;
+  const half=halfAtt[r.iso]||false;
+  const la=leaveAmt[r.iso]||0;
+  const isPHatt=r.isPH&&att;
+  if(isPHatt) return "r-ph-att";
+  if(la===1)  return "r-leave-full";
+  if(la===0.5)return "r-leave-half";
+  if(half)    return "r-half-att";
+  if(att)     return "r-work";
+  return r.cls;
+}
+
+/* OT period: 21st of a month to 20th of next month */
+function otPeriodFor(iso){
+  const d=new Date(iso);
+  let y=d.getFullYear(), m=d.getMonth();
+  if(d.getDate()<21){ m=m-1; if(m<0){m=11;y--;} }
+  return y+"-"+String(m+1).padStart(2,"0");
+}
+function otRate(r){ if(r.isPH) return 2; if(r.isFri) return 1; return 1.5; }
+
+function render(){
+  buildRows();
+  const tbody=document.getElementById("calBody"); tbody.innerHTML="";
+  const todayIso=isoDate(new Date());
+  const hourly=isHourlyRole();
+  rows.forEach(r=>{
+    const att=attended[r.iso]||false;
+    const half=halfAtt[r.iso]||false;
+    const la=leaveAmt[r.iso]||0;
+    const ltype=leaveType[r.iso]||"regular";
+    const isPHatt=r.isPH&&att;
+    const canAtt=true; // Friday attendance now allowed (counts toward cycle/bonus rules)
+    const canHalfAtt=att&&canAtt&&!r.isFri&&!r.isPH; // Friday/PH: full-day attendance only
+    const canLeave=!r.isFri&&!att&&!r.isPH;
+    const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff"); // half only allowed for regular type
+    const bonusTag=isPHatt&&!r.isFri?'<span class="bonus-tag">+1</span>':"";
+    const rowCls=getRowClass(r);
+    const tr=document.createElement("tr");
+    tr.className=rowCls+(r.iso===todayIso?" today-row":"");
+    tr.id="row-"+r.iso;
+    const dayName=curLang==="ar"?DAYS_AR[r.dow]:DAYS[r.dow];
+    const otCell=hourly?`<td class="td-center"><input type="number" class="ot-input" min="0" max="24" step="0.5" data-iso="${r.iso}" value="${otHours[r.iso]||""}"></td>`:"";
+    tr.innerHTML=`
+      <td>${r.seqN||""}</td>
+      <td class="td-date">${fmtDate(r.d)}</td>
+      <td>${dayName}</td>
+      <td>${r.cycleType}${r.cyclePos!==null?'<span class="badge">'+r.cyclePos+"/"+r.W+"</span>":""}</td>
+      <td class="td-phname">${r.phName||""}${bonusTag}</td>
+      <td class="td-note">${r.note}</td>
+      <td class="td-center"><input type="checkbox" class="chk" data-iso="${r.iso}" ${att?"checked":""} ${!canAtt?"disabled":""}></td>
+      <td class="td-center"><input type="checkbox" class="chk-half-att" data-iso="${r.iso}" ${half?"checked":""} ${!canHalfAtt?"disabled":""}></td>
+      <td class="td-center">
+        <div class="leave-amt">
+          <button class="lamt-btn${la===1?" active-full":""}" data-iso="${r.iso}" data-amt="1" ${!canLeave?"disabled":""}>Full</button>
+          <button class="lamt-btn${la===0.5?" active-half":""}" data-iso="${r.iso}" data-amt="0.5" ${(!canLeave||halfDisabled)?"disabled":""}>Half</button>
+        </div>
+      </td>
+      <td class="td-center">
+        <select class="leave-sel" data-iso="${r.iso}" ${(la===0||!canLeave)?"disabled":""}>
+          <option value="regular"   ${ltype==="regular"?"selected":""}>${t("leaveTypeRegular")}</option>
+          <option value="emergency" ${la===0.5?"disabled":""} ${ltype==="emergency"?"selected":""}>${t("leaveTypeEmergency")}</option>
+          <option value="dayoff" ${la===0.5?"disabled":""} ${ltype==="dayoff"?"selected":""}>${t("leaveTypeDayOff")}</option>
+        </select>
+      </td>${otCell}`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll(".chk").forEach(cb=>cb.addEventListener("change",function(){
+    const iso=this.dataset.iso; attended[iso]=this.checked;
+    if(!this.checked){halfAtt[iso]=false;}
+    if(this.checked){leaveAmt[iso]=0;}
+    refreshRow(iso); updateStats(); save();
+  }));
+
+  tbody.querySelectorAll(".chk-half-att").forEach(cb=>cb.addEventListener("change",function(){
+    const iso=this.dataset.iso; halfAtt[iso]=this.checked;
+    refreshRow(iso); updateStats(); save();
+  }));
+
+  tbody.querySelectorAll(".lamt-btn").forEach(btn=>btn.addEventListener("click",function(){
+    if(this.disabled)return;
+    const iso=this.dataset.iso; const amt=parseFloat(this.dataset.amt);
+    leaveAmt[iso]=(leaveAmt[iso]===amt)?0:amt;
+    if(leaveAmt[iso]===0) leaveType[iso]="regular";
+    else if(leaveAmt[iso]===0.5&&(leaveType[iso]==="emergency"||leaveType[iso]==="dayoff")) leaveType[iso]="regular";
+    refreshRow(iso); updateStats(); save();
+  }));
+
+  tbody.querySelectorAll(".leave-sel").forEach(sel=>sel.addEventListener("change",function(){
+    const iso=this.dataset.iso; leaveType[iso]=this.value;
+    updateStats(); save();
+  }));
+
+  tbody.querySelectorAll(".ot-input").forEach(inp=>inp.addEventListener("input",function(){
+    const iso=this.dataset.iso; const v=parseFloat(this.value);
+    if(!v||v<=0) delete otHours[iso]; else otHours[iso]=v;
+    updateStats(); save();
+  }));
+
+  updateStats();
+  const todayRow=document.getElementById("row-"+todayIso);
+  if(todayRow) todayRow.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function refreshRow(iso){
+  const tr=document.getElementById("row-"+iso); if(!tr)return;
+  const r=rows.find(x=>x.iso===iso); if(!r)return;
+  const att=attended[iso]||false, half=halfAtt[iso]||false;
+  const la=leaveAmt[iso]||0, ltype=leaveType[iso]||"regular";
+  const isPHatt=r.isPH&&att;
+  const canAtt=true;
+  const canHalfAtt=att&&canAtt&&!r.isFri&&!r.isPH;
+  const canLeave=!r.isFri&&!att&&!r.isPH;
+  const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff");
+  const todayIso=isoDate(new Date());
+  tr.className=getRowClass(r)+(iso===todayIso?" today-row":"");
+  const bonusTag=isPHatt&&!r.isFri?'<span class="bonus-tag">+1</span>':"";
+  tr.cells[4].innerHTML=(r.phName||"")+bonusTag;
+  const hcb=tr.querySelector(".chk-half-att"); if(hcb){hcb.disabled=!canHalfAtt; if(!canHalfAtt){hcb.checked=false; halfAtt[iso]=false;}}
+  tr.querySelectorAll(".lamt-btn").forEach(btn=>{
+    const amt=parseFloat(btn.dataset.amt);
+    btn.disabled=!canLeave||(amt===0.5&&halfDisabled);
+    btn.className="lamt-btn"+(la===1&&amt===1?" active-full":la===0.5&&amt===0.5?" active-half":"");
+  });
+  const sel=tr.querySelector(".leave-sel");
+  if(sel){
+    sel.disabled=(la===0||!canLeave); sel.value=ltype;
+    const optEm=sel.querySelector('option[value="emergency"]'); if(optEm) optEm.disabled=(la===0.5);
+    const optDo=sel.querySelector('option[value="dayoff"]'); if(optDo) optDo.disabled=(la===0.5);
+  }
+}
+
+function updateStats(){
+  const {regMax,emMax,carryOver}=getSettings();
+  let work=0,half=0,leaveFull=0,leaveHalf=0,phAtt=0,regUsed=0,emUsed=0,dayOffUsed=0;
+  const hourly=isHourlyRole();
+  const todayIso=isoDate(new Date());
+  const curPeriod=otPeriodFor(todayIso);
+  let otRaw=0, otWeighted=0;
+
+  rows.forEach(r=>{
+    if(attended[r.iso]){
+      if(halfAtt[r.iso]) half++; else work++;
+      if(r.isPH&&!r.isFri&&!hourly) phAtt++; // compensatory bonus excludes Fridays, and not for hourly roles
+    }
+    const la=leaveAmt[r.iso]||0;
+    if(la>0){
+      if(la===1) leaveFull++; else leaveHalf++;
+      const days=la, lt=leaveType[r.iso]||"regular";
+      if(lt==="emergency") emUsed+=days;
+      else if(lt==="dayoff") dayOffUsed+=days;
+      else regUsed+=days;
+    }
+    if(hourly&&otHours[r.iso]){
+      if(otPeriodFor(r.iso)===curPeriod){
+        otRaw+=otHours[r.iso];
+        otWeighted+=otHours[r.iso]*otRate(r);
+      }
+    }
+  });
+  const bonus=phAtt; // +1 compensatory day per non-Friday PH attended (non-hourly roles only)
+  const regTotal=regMax+carryOver+bonus;
+  const regRem=regTotal-regUsed;
+  const emRem=emMax-emUsed;
+
+  const attendedTotal=work+half*0.5;
+  document.getElementById("s-work").textContent=attendedTotal.toFixed(1).replace(".0","");
+  document.getElementById("s-half").textContent=half;
+  document.getElementById("s-leave-full").textContent=leaveFull;
+  document.getElementById("s-leave-half").textContent=leaveHalf;
+  document.getElementById("s-phatt").textContent=phAtt;
+  document.getElementById("s-dayoff").textContent=dayOffUsed;
+  if(hourly){
+    document.getElementById("s-ot-period").textContent=otRaw;
+    document.getElementById("s-ot-weighted").textContent=otWeighted.toFixed(1).replace(".0","");
+  }
+
+  document.getElementById("b-reg-used").textContent=regUsed+" / "+regTotal;
+  document.getElementById("b-em-used").textContent=emUsed+" / "+emMax;
+  document.getElementById("b-ph-att").textContent=phAtt;
+  document.getElementById("b-bonus").textContent="+"+bonus;
+  document.getElementById("b-eff-reg").textContent=regTotal;
+  document.getElementById("b-eff-rem").textContent=Math.max(0,regRem).toFixed(1).replace(".0","");
+
+  const regPct=Math.min(100,Math.round(regUsed/Math.max(regTotal,1)*100));
+  document.getElementById("bar-reg").style.width=regPct+"%";
+  document.getElementById("bar-reg").className="bal-bar "+(regPct>80?"bar-red":regPct>50?"bar-orange":"bar-green");
+  const emPct=Math.min(100,Math.round(emUsed/Math.max(emMax,1)*100));
+  document.getElementById("bar-em").style.width=emPct+"%";
+  document.getElementById("bar-em").className="bal-bar "+(emPct>80?"bar-red":emPct>50?"bar-orange":"bar-green");
+
+  const setC=(id,v)=>{const el=document.getElementById(id);el.textContent=v;el.className=v<=0?"danger":v<=3?"warn":"ok";};
+  setC("b-reg-rem",regRem);
+  setC("b-em-rem",emRem);
+
+  const note=document.getElementById("bal-note");
+  if(regRem<=0) note.textContent=(curLang==="ar"?"انتهى رصيد الإجازة العادية! متبقي ":"Regular leave exhausted! You have ")+emRem+(curLang==="ar"?" يوم طوارئ.":" emergency days left.");
+  else if(emRem<=0) note.textContent=(curLang==="ar"?"انتهى رصيد إجازة الطوارئ! متبقي ":"Emergency leave exhausted! You have ")+regRem+(curLang==="ar"?" يوم عادي.":" regular days left.");
+  else note.textContent=curLang==="ar"
+      ?("متبقي من العادية: "+regRem+" يوم (شامل "+bonus+" بدل إجازات رسمية + "+carryOver+" مرحّل). متبقي من الطوارئ: "+emRem+" يوم.")
+      :("Regular: "+regRem+" days left (incl. "+bonus+" PH compensatory + "+carryOver+" carried over). Emergency: "+emRem+" days left.");
+
+  const todayRow=rows.find(r=>r.iso===todayIso);
+  if(todayRow&&todayRow.cyclePos!==null){
+    const rem=todayRow.W-todayRow.cyclePos;
+    document.getElementById("s-rem").textContent=rem>=0?rem+(curLang==="ar"?" يوم":" days"):(curLang==="ar"?"إجازة الدورة الحالية":"On cycle leave");
+    const nl=rows.find(r=>r.iso>todayIso&&r.cycleType==="Leave day");
+    document.getElementById("s-next").textContent=nl?fmtDate(nl.d):"—";
+  } else {
+    document.getElementById("s-rem").textContent="—";
+    document.getElementById("s-next").textContent="—";
+  }
+}
+
+function exportCyclePDF(){
+  const todayIso=isoDate(new Date());
+  let todayRow=rows.find(r=>r.iso===todayIso);
+  let cycleNum=todayRow?todayRow.cycleNum:(rows[0]?rows[0].cycleNum:0);
+  const cycleRows=rows.filter(r=>r.cycleNum===cycleNum).sort((a,b)=>a.iso<b.iso?-1:1);
+  if(!cycleRows.length){ return; }
+  const hourly=isHourlyRole();
+  const ar=curLang==="ar";
+
+  let work=0,half=0,leaveFull=0,leaveHalf=0,phAtt=0,regUsed=0,emUsed=0,dayOffUsed=0,otRaw=0,otWeighted=0;
+  cycleRows.forEach(r=>{
+    if(attended[r.iso]){
+      if(halfAtt[r.iso]) half++; else work++;
+      if(r.isPH&&!r.isFri&&!hourly) phAtt++;
+    }
+    const la=leaveAmt[r.iso]||0;
+    if(la>0){
+      if(la===1) leaveFull++; else leaveHalf++;
+      const lt=leaveType[r.iso]||"regular";
+      if(lt==="emergency") emUsed+=la;
+      else if(lt==="dayoff") dayOffUsed+=la;
+      else regUsed+=la;
+    }
+    if(hourly&&otHours[r.iso]){ otRaw+=otHours[r.iso]; otWeighted+=otHours[r.iso]*otRate(r); }
+  });
+
+  const rangeLabel=fmtDate(cycleRows[0].d)+" — "+fmtDate(cycleRows[cycleRows.length-1].d);
+  const userLine=(currentUser?currentUser.fullName+" ("+currentUser.empId+") — "+currentUser.role:"");
+
+  const rowsHtml=cycleRows.map(r=>{
+    const att=attended[r.iso]||false, half=halfAtt[r.iso]||false;
+    const la=leaveAmt[r.iso]||0, lt=leaveType[r.iso]||"";
+    const dayName=ar?DAYS_AR[r.dow]:DAYS[r.dow];
+    const cls=getRowClass(r);
+    const attTxt=att?(half?(ar?"نصف يوم":"Half"):(ar?"يوم كامل":"Full")):"—";
+    const leaveTxt=la>0?((la===1?(ar?"يوم كامل":"Full"):(ar?"نصف يوم":"Half"))+" / "+(lt==="emergency"?(ar?"طوارئ":"Emergency"):lt==="dayoff"?(ar?"راحة دورة":"Day Off"):(ar?"عادية":"Regular"))):"—";
+    const otTxt=hourly?(otHours[r.iso]||"—"):"";
+    return `<tr class="${cls}">
+      <td>${fmtDate(r.d)}</td><td>${dayName}</td><td>${r.cycleType}</td><td>${r.phName||""}</td>
+      <td>${attTxt}</td><td>${leaveTxt}</td>${hourly?`<td>${otTxt}</td>`:""}
+    </tr>`;
+  }).join("");
+
+  const summaryHtml=`
+    <table class="summary">
+      <tr><th>${ar?"أيام الحضور":"Days attended"}</th><td>${(work+half*0.5).toFixed(1).replace(".0","")}</td>
+          <th>${ar?"إجازة كاملة":"Full leave"}</th><td>${leaveFull}</td>
+          <th>${ar?"إجازة نصف يوم":"Half leave"}</th><td>${leaveHalf}</td></tr>
+      <tr><th>${ar?"عادية مستخدمة":"Regular used"}</th><td>${regUsed}</td>
+          <th>${ar?"طوارئ مستخدمة":"Emergency used"}</th><td>${emUsed}</td>
+          <th>${ar?"راحة دورة مستخدمة":"Day-off used"}</th><td>${dayOffUsed}</td></tr>
+      ${hourly?`<tr><th>${ar?"ساعات إضافية فعلية":"OT actual hours"}</th><td>${otRaw}</td>
+          <th>${ar?"ساعات إضافية محسوبة":"OT weighted hours"}</th><td colspan="3">${otWeighted.toFixed(1).replace(".0","")}</td></tr>`
+        :`<tr><th>${ar?"بونص إجازات رسمية":"PH bonus days"}</th><td colspan="5">+${phAtt}</td></tr>`}
+    </table>`;
+
+  const win=window.open("","_blank");
+  win.document.write(`<!DOCTYPE html><html lang="${curLang}" dir="${ar?'rtl':'ltr'}"><head><meta charset="UTF-8">
+  <title>Atrium Attendance Tracker — ${ar?"تصدير الدورة":"Cycle Export"}</title>
+  <style>
+    *{box-sizing:border-box;font-family:Arial,sans-serif}
+    body{padding:24px;color:#222}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1F4E79;padding-bottom:10px;margin-bottom:16px}
+    .top h1{color:#1F4E79;font-size:20px;margin-bottom:4px}
+    .top .meta{font-size:11px;color:#555;line-height:1.5}
+    .top .brand{font-size:10px;color:#888;font-style:italic;margin-top:4px}
+    table.summary{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:11px}
+    table.summary th{background:#1F4E79;color:#fff;padding:6px;text-align:${ar?'right':'left'};font-weight:600}
+    table.summary td{padding:6px;border:1px solid #ddd;font-weight:700;text-align:center}
+    table.cal{width:100%;border-collapse:collapse;font-size:11px}
+    table.cal th{background:#1F4E79;color:#fff;padding:6px;font-size:10px}
+    table.cal td{padding:5px 6px;border-bottom:1px solid #eee;text-align:center}
+    tr.r-work{background:#d4edda}tr.r-leave-full{background:#fff3cd}tr.r-leave-half{background:#fff9e6}
+    tr.r-ph{background:#f8d7da}tr.r-ph-att{background:#cce5ff}tr.r-fri{background:#e9ecef}tr.r-half-att{background:#e8d5f5}
+    @media print{ body{padding:8px} }
+  </style></head><body>
+    <div class="top">
+      <div>
+        <h1>${ar?"تقرير دورة الحضور":"Attendance Cycle Report"}</h1>
+        <div class="meta">${userLine}<br>${ar?"الفترة":"Period"}: ${rangeLabel}</div>
+      </div>
+      <div class="meta" style="text-align:${ar?'left':'right'}">
+        <div class="brand">Atrium Attendance Tracker</div>
+        <div>${ar?"تاريخ التصدير":"Exported"}: ${fmtDate(new Date())}</div>
+      </div>
+    </div>
+    ${summaryHtml}
+    <table class="cal">
+      <thead><tr>
+        <th>${ar?"التاريخ":"Date"}</th><th>${ar?"اليوم":"Day"}</th><th>${ar?"نوع اليوم":"Cycle type"}</th><th>${ar?"إجازة رسمية":"Public holiday"}</th>
+        <th>${ar?"الحضور":"Attended"}</th><th>${ar?"الإجازة":"Leave"}</th>${hourly?`<th>${ar?"ساعات إضافية":"OT hrs"}</th>`:""}
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  </body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(()=>{ win.print(); },350);
+}
+
+["startDate","workDays","leaveDays","phAsWork","regMax","emMax","carryOver"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",()=>{render();save();});
+});
+
+document.getElementById("footerYear").textContent=new Date().getFullYear();
+
+/* default start date = Jan 1 of current year (overridden by saved settings in load()) */
+document.getElementById("startDate").value=new Date().getFullYear()+"-01-01";
+
+/* ---------------- KEYBOARD CONTROL ---------------- */
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"){
+    document.getElementById("clearModal").classList.remove("open");
+  }
+});
+function enterSubmits(fieldIds,fn){
+  fieldIds.forEach(id=>{
+    document.getElementById(id).addEventListener("keydown",function(e){
+      if(e.key==="Enter"){ e.preventDefault(); fn(); }
+    });
+  });
+}
+enterSubmits(["loginEmpId","loginPassword"],doLogin);
+enterSubmits(["suName","suEmpId","suPassword"],doSignup);
+
+/* ---------------- INIT ---------------- */
+applyDark();
+applyI18n();
+document.querySelector(".main").style.display="none";
+document.querySelector(".header").style.visibility="hidden";
+document.querySelector(".footer").style.visibility="hidden";
+
+if("serviceWorker" in navigator && (location.protocol==="http:"||location.protocol==="https:")){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+
+(function initSession(){
+  const empId=getSession();
+  if(empId){
+    const accounts=getAccounts();
+    if(accounts[empId]){ enterApp(empId,accounts[empId]); return; }
+  }
+  document.getElementById("authScreen").style.display="flex";
+})();
+</script>
+</body>
+</html>
