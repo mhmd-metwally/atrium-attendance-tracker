@@ -2,7 +2,7 @@
   "name": "Atrium Attendance Tracker",
   "short_name": "Atrium",
   "description": "Work/leave cycle tracker, annual leave balance, public holiday bonus and overtime tracking.",
-  "start_url": "./attendance_tracker_v4.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
