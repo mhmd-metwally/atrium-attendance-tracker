@@ -54,7 +54,11 @@ body.dark .footer{background:#0a0e14;color:var(--muted);border-top-color:var(--b
 /* HEADER */
 .header{
   background:linear-gradient(135deg,var(--primary),var(--primary2));
-  color:#fff;padding:11px 14px;
+  color:#fff;
+  padding:11px 14px;
+  padding-top:max(11px, env(safe-area-inset-top));
+  padding-left:max(14px, env(safe-area-inset-left));
+  padding-right:max(14px, env(safe-area-inset-right));
   display:flex;align-items:center;gap:10px;
   position:sticky;top:0;z-index:50;
   box-shadow:0 2px 12px rgba(0,0,0,.22);
@@ -87,7 +91,7 @@ body.dark .footer{background:#0a0e14;color:var(--muted);border-top-color:var(--b
 .toggle-wrap{display:flex;align-items:center;gap:4px;font-size:10px;opacity:.9}
 
 /* MAIN */
-.main{max-width:1320px;margin:0 auto;padding:12px;padding-bottom:88px}
+.main{max-width:1320px;margin:0 auto;padding:12px;padding-bottom:max(88px, env(safe-area-inset-bottom) + 78px);padding-left:max(12px, env(safe-area-inset-left));padding-right:max(12px, env(safe-area-inset-right))}
 
 /* CONTROLS */
 .controls-wrap{margin-bottom:10px}
@@ -285,7 +289,7 @@ input.dc-ot-input{
 
 /* FAB */
 .fab-today{
-  position:fixed;bottom:20px;right:16px;z-index:60;
+  position:fixed;bottom:max(20px, env(safe-area-inset-bottom) + 10px);right:max(16px, env(safe-area-inset-right));z-index:60;
   background:var(--primary);color:#fff;border:none;
   border-radius:28px;padding:13px 20px;
   font-size:13px;font-weight:800;cursor:pointer;
