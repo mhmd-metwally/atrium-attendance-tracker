@@ -18,87 +18,143 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f0f2f5;--card:#fff;--text:#222;--sub:#555;--muted:#888;--border:#e9ecef;
-  --header1:#1F4E79;--header2:#2E75B6;
+  --bg:#f0f2f5;--card:#fff;--text:#222;--sub:#555;--muted:#888;--border:#e0e4ea;
+  --primary:#1F4E79;--primary2:#2E75B6;--primary-light:#e8f0f9;
+  --green:#1a7a3f;--orange:#b06800;--red:#8b0000;--teal:#0d6e6e;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 2px 10px rgba(0,0,0,.07);--shadow-md:0 4px 20px rgba(0,0,0,.12);
 }
 body.dark{
-  --bg:#11161d;--card:#1b232e;--text:#e8eaed;--sub:#aab2bd;--muted:#7e8896;--border:#2a3441;
+  --bg:#0f1318;--card:#19202d;--text:#e8eaed;--sub:#9aa5b4;--muted:#6b7785;
+  --border:#252e3d;--primary-light:#1a2843;
 }
-body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s}
-body.dark .stat,body.dark .bal-card,body.dark .bal-settings,body.dark .controls,body.dark .legend,body.dark .table-wrap{background:var(--card)}
-body.dark input,body.dark select{background:#222c38;color:var(--text);border-color:#3a4654}
-body.dark td{border-bottom-color:#28323e}
-body.dark th{background:#142233}
-body.dark .modal{background:var(--card);color:var(--text)}
-body.dark .footer{background:#0d1117;color:#aab2bd}
-.header{background:linear-gradient(135deg,var(--header1),var(--header2));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.header h1{font-size:16px;font-weight:600}
-.header p{font-size:11px;opacity:.8;margin-top:2px}
-.header-credit{font-size:9px;opacity:.75;margin-top:2px;font-style:italic}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.header-user{display:flex;flex-direction:column;align-items:flex-end;margin-right:4px}
-.header-user b{font-size:13px}
-.header-user span{font-size:10px;opacity:.85}
-.icon-btn{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:5px}
-.icon-btn:hover{background:rgba(255,255,255,.28)}
-.switch{position:relative;display:inline-block;width:38px;height:20px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  transition:background .2s,color .2s;-webkit-tap-highlight-color:transparent;
+}
+body.dark .stat,body.dark .bal-card,body.dark .bal-settings,
+body.dark .controls,body.dark .legend,body.dark .table-wrap,
+body.dark .day-card,body.dark .controls-toggle{background:var(--card)}
+body.dark input,body.dark select{background:#1e2a3a;color:var(--text);border-color:var(--border)}
+body.dark td{border-bottom-color:var(--border)}
+body.dark th{background:#0e1929}
+body.dark .modal-box{background:var(--card);color:var(--text)}
+body.dark .footer{background:#0a0e14;color:var(--muted);border-top-color:var(--border)}
+
+/* HEADER */
+.header{
+  background:linear-gradient(135deg,var(--primary),var(--primary2));
+  color:#fff;padding:11px 14px;
+  display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,.22);
+}
+.header-icon{flex-shrink:0;opacity:.9}
+.header-title{flex:1;min-width:0}
+.header-title h1{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-title .hsub{font-size:10px;opacity:.72;margin-top:1px}
+.header-title .hcredit{font-size:9px;opacity:.6;font-style:italic;margin-top:1px}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.icon-btn{
+  background:rgba(255,255,255,.15);border:none;color:#fff;
+  border-radius:var(--radius-sm);padding:7px 11px;font-size:11px;
+  cursor:pointer;font-weight:700;display:flex;align-items:center;gap:5px;
+  min-height:38px;min-width:38px;justify-content:center;transition:background .15s;
+}
+.icon-btn:hover,.icon-btn:active{background:rgba(255,255,255,.28)}
+.user-chip{
+  background:rgba(255,255,255,.17);border-radius:20px;
+  padding:5px 11px;display:flex;flex-direction:column;align-items:flex-start;
+}
+.user-chip b{font-size:12px;line-height:1.2}
+.user-chip small{font-size:9px;opacity:.8}
+.switch{position:relative;display:inline-block;width:36px;height:20px}
 .switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.25);transition:.2s;border-radius:20px}
+.slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,.25);transition:.2s;border-radius:20px}
 .slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;transition:.2s;border-radius:50%}
-.switch input:checked+.slider{background:#1a7a3f}
-.switch input:checked+.slider:before{transform:translateX(18px)}
-.toggle-wrap{display:flex;align-items:center;gap:6px;font-size:11px}
-.main{max-width:1320px;margin:0 auto;padding:12px}
+.switch input:checked+.slider{background:var(--green)}
+.switch input:checked+.slider:before{transform:translateX(16px)}
+.toggle-wrap{display:flex;align-items:center;gap:4px;font-size:10px;opacity:.9}
 
-/* controls */
-.controls{background:var(--card);border-radius:10px;padding:11px 14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.ctrl-group{display:flex;align-items:center;gap:5px}
+/* MAIN */
+.main{max-width:1320px;margin:0 auto;padding:12px;padding-bottom:88px}
+
+/* CONTROLS */
+.controls-wrap{margin-bottom:10px}
+.controls-toggle{
+  width:100%;padding:11px 14px;
+  background:var(--card);border:none;border-radius:var(--radius);
+  color:var(--text);font-size:13px;font-weight:700;cursor:pointer;
+  box-shadow:var(--shadow);display:none;align-items:center;justify-content:space-between;
+}
+.controls-toggle .arr{transition:transform .2s;font-size:11px;opacity:.6}
+.controls-toggle.open .arr{transform:rotate(180deg)}
+.controls{
+  background:var(--card);border-radius:var(--radius);
+  padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;
+  align-items:center;box-shadow:var(--shadow);
+}
+.ctrl-group{display:flex;align-items:center;gap:6px}
 .ctrl-group label{font-size:11px;color:var(--sub);white-space:nowrap}
-.ctrl-group input[type=date],.ctrl-group input[type=number]{font-size:12px;padding:4px 7px;border-radius:6px;border:1px solid #ccc;background:#fafafa;color:#222}
-.ctrl-group input[type=number]{width:56px}
-.ph-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub);cursor:pointer}
-.ph-toggle input{cursor:pointer;accent-color:#1a7a3f;width:14px;height:14px}
-.divider{width:1px;height:24px;background:#ddd;margin:0 2px}
-.btn{padding:6px 12px;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap}
-.btn-export{background:#1F4E79;color:#fff}.btn-export:hover{background:#2E75B6}
+.ctrl-group input[type=date],.ctrl-group input[type=number]{
+  font-size:12px;padding:6px 8px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);background:var(--bg);color:var(--text);min-height:36px;
+}
+.ctrl-group input[type=number]{width:60px}
+.ph-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--sub);cursor:pointer}
+.ph-toggle input{cursor:pointer;accent-color:var(--green);width:16px;height:16px}
+.divider{width:1px;height:24px;background:var(--border);margin:0 2px}
+.btn{
+  padding:8px 14px;border:none;border-radius:var(--radius-sm);
+  font-size:12px;cursor:pointer;font-weight:700;white-space:nowrap;
+  min-height:36px;transition:.15s;
+}
+.btn-export{background:var(--primary);color:#fff}.btn-export:hover{background:var(--primary2)}
 .btn-clear{background:#dc3545;color:#fff}.btn-clear:hover{background:#b02a37}
-.btn-logout{background:#6c757d;color:#fff}.btn-logout:hover{background:#565e64}
 
-/* balance settings */
-.bal-settings{background:var(--card);border-radius:10px;padding:11px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.bal-settings-title{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.bal-settings-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+/* BAL SETTINGS */
+.bal-settings{
+  background:var(--card);border-radius:var(--radius);
+  padding:13px 16px;margin-bottom:10px;box-shadow:var(--shadow);
+}
+.bal-settings-title{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.bal-settings-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .bsi{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
-.bsi input[type=number]{width:60px;font-size:12px;padding:4px 7px;border-radius:6px;border:1px solid #ccc;background:#fafafa;color:#222}
+.bsi input[type=number]{width:62px;font-size:12px;padding:6px 8px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);color:var(--text);min-height:36px}
 .bsi-note{font-size:10px;color:var(--muted);margin-left:2px}
 
-/* balance panel */
+/* BALANCE PANEL */
 .balance-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.bal-card{background:var(--card);border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.bal-title{font-size:12px;font-weight:600;color:var(--sub);margin-bottom:7px}
+.bal-card{background:var(--card);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.bal-title{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:8px}
 .bal-rows{display:flex;flex-direction:column;gap:4px}
 .bal-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
 .bal-row span:first-child{color:var(--sub)}
 .bal-row span:last-child{font-weight:700;font-size:14px}
-.ok{color:#1a7a3f}.warn{color:#b06800}.danger{color:#8b0000}
-.bonus-color{color:#0d6e6e}
-.bal-bar-wrap{background:#e9ecef;border-radius:4px;height:6px;margin:3px 0 2px;overflow:hidden}
+.ok{color:var(--green)}.warn{color:var(--orange)}.danger{color:var(--red)}
+.bonus-color{color:var(--teal)}
+.bal-bar-wrap{background:var(--border);border-radius:4px;height:6px;margin:3px 0 2px;overflow:hidden}
 .bal-bar{height:100%;border-radius:4px;transition:width .3s}
 .bar-green{background:#28a745}.bar-orange{background:#fd7e14}.bar-red{background:#dc3545}
-.bal-note{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.4}
+.bal-note{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}
 
-/* stats */
+/* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px}
-.stat{background:var(--card);border-radius:10px;padding:9px 12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.stat-label{font-size:10px;color:var(--muted);margin-bottom:2px}
-.stat-val{font-size:21px;font-weight:700}
-.v-work{color:#1a7a3f}.v-half{color:#6c3483}.v-leave{color:#b06800}
-.v-ph{color:#8b0000}.v-acc{color:#185FA5}.v-bonus{color:#0d6e6e}.v-ot{color:#b05a00}
+.stat{background:var(--card);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:3px;line-height:1.3}
+.stat-val{font-size:22px;font-weight:800}
+.v-work{color:var(--green)}.v-half{color:#6c3483}.v-leave{color:var(--orange)}
+.v-ph{color:var(--red)}.v-acc{color:var(--primary)}.v-bonus{color:var(--teal)}.v-ot{color:#b05a00}
 
-/* legend */
-.legend{background:var(--card);border-radius:10px;padding:8px 14px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--sub)}
-.dot{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+/* LEGEND */
+.legend{
+  background:var(--card);border-radius:var(--radius);
+  padding:10px 14px;margin-bottom:10px;
+  display:flex;flex-wrap:wrap;gap:8px 14px;box-shadow:var(--shadow);
+}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--sub)}
+.dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
 .d-work{background:#d4edda;border:1px solid #28a745}
 .d-half{background:#e8d5f5;border:1px solid #8e44ad}
 .d-leave-full{background:#fff3cd;border:1px solid #e6ac00}
@@ -107,11 +163,11 @@ body.dark .footer{background:#0d1117;color:#aab2bd}
 .d-ph-att{background:#cce5ff;border:1px solid #004085}
 .d-fri{background:#e9ecef;border:1px solid #adb5bd}
 
-/* table */
-.table-wrap{background:var(--card);border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:auto;max-height:72vh}
-table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
-th{background:#1F4E79;color:#fff;padding:7px 6px;text-align:center;font-weight:500;font-size:11px;position:sticky;top:0;z-index:2;white-space:nowrap}
-td{padding:4px 6px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+/* TABLE (desktop) */
+.table-wrap{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:auto;max-height:72vh}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:860px}
+th{background:var(--primary);color:#fff;padding:8px 6px;text-align:center;font-weight:500;font-size:11px;position:sticky;top:0;z-index:2;white-space:nowrap}
+td{padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
 tr:hover td{filter:brightness(.97)}
 tr.r-work{background:#d4edda}tr.r-work td{color:#145a32}
 tr.r-leave-full{background:#fff3cd}tr.r-leave-full td{color:#7d5a00}
@@ -122,86 +178,214 @@ tr.r-ph-att{background:#cce5ff}tr.r-ph-att td{color:#003f7f}
 tr.r-fri{background:#e9ecef}tr.r-fri td{color:#888}
 tr.r-half-att{background:#e8d5f5}tr.r-half-att td{color:#512e5f}
 tr.r-base{background:var(--card)}
-.today-row{outline:2px solid #2E75B6;outline-offset:-1px}
+.today-row{outline:2px solid var(--primary2);outline-offset:-1px}
 .td-date{font-weight:600;white-space:nowrap}
 .td-note{font-size:10px;line-height:1.3}
 .td-phname{font-size:10px;line-height:1.3;max-width:120px}
 .badge{display:inline-block;font-size:9px;padding:1px 4px;border-radius:3px;background:rgba(0,0,0,.09);margin-left:2px}
-.bonus-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;background:#0d6e6e;color:#fff;margin-left:3px}
+.bonus-tag{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;background:var(--teal);color:#fff;margin-left:3px}
 .td-center{text-align:center}
-.chk,.chk-half-att{width:15px;height:15px;cursor:pointer}
+.chk,.chk-half-att{width:16px;height:16px;cursor:pointer}
 .chk{accent-color:#28a745}.chk-half-att{accent-color:#8e44ad}
 input[type=checkbox]:disabled{opacity:.3;cursor:not-allowed}
-.ot-input{width:54px;font-size:11px;padding:3px 5px;border-radius:5px;border:1px solid #ccc;background:#fafafa;color:#222;text-align:center}
-
-/* leave taken controls */
-.leave-ctrl{display:flex;flex-direction:column;gap:3px;align-items:center}
-.lc-row{display:flex;align-items:center;gap:3px;font-size:10px;white-space:nowrap}
+.ot-input{width:54px;font-size:11px;padding:4px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--bg);color:var(--text);text-align:center}
 .leave-amt{display:flex;gap:2px}
-.lamt-btn{padding:1px 6px;font-size:10px;border-radius:3px;border:1px solid #ccc;background:#fafafa;cursor:pointer;color:#555;transition:.15s}
+.lamt-btn{
+  padding:3px 8px;font-size:10px;border-radius:4px;
+  border:1.5px solid var(--border);background:var(--bg);
+  cursor:pointer;color:var(--sub);transition:.15s;
+}
 .lamt-btn.active-full{background:#e6ac00;color:#fff;border-color:#b07800;font-weight:700}
 .lamt-btn.active-half{background:#fef3c7;color:#92610a;border-color:#e6ac00;font-weight:700}
 .lamt-btn:disabled{opacity:.3;cursor:not-allowed}
-
-select.leave-sel{font-size:10px;padding:2px 4px;border-radius:4px;border:1px solid #ccc;background:#fafafa;color:#222;width:88px}
+select.leave-sel{font-size:10px;padding:3px 5px;border-radius:4px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);width:90px}
 select.leave-sel:disabled{opacity:.35;cursor:not-allowed}
 
-/* footer */
-.footer{margin-top:18px;padding:14px 20px;text-align:center;font-size:11px;color:#777;background:#fff;border-top:1px solid #e9ecef}
-.footer b{color:#1F4E79}
+/* MOBILE CARDS */
+.cards-wrap{display:none;flex-direction:column;gap:10px}
+.day-card{
+  background:var(--card);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+  border-left:4px solid transparent;
+}
+.day-card.dc-work{border-left-color:#28a745}
+.day-card.dc-leave-full,.day-card.dc-leave-half{border-left-color:#e6ac00}
+.day-card.dc-ph{border-left-color:#c0392b}
+.day-card.dc-ph-att{border-left-color:#004085}
+.day-card.dc-fri{border-left-color:#adb5bd}
+.day-card.dc-half-att{border-left-color:#8e44ad}
+.dc-today{outline:2.5px solid var(--primary2);outline-offset:-2px}
 
-/* modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.dc-head{
+  display:flex;align-items:center;padding:11px 14px 8px;gap:8px;
+}
+.dc-date-blk{flex:1;min-width:0}
+.dc-date{font-weight:800;font-size:14px}
+.dc-dayname{font-size:11px;color:var(--sub);margin-top:2px}
+.dc-type-badge{
+  font-size:10px;padding:3px 10px;border-radius:12px;
+  background:var(--primary-light);color:var(--primary);
+  font-weight:700;white-space:nowrap;flex-shrink:0;
+}
+.dc-pos{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--border);color:var(--sub);font-weight:700;margin-left:4px;flex-shrink:0}
+.dc-ph-name{font-size:10px;color:var(--red);font-weight:600;text-align:right;line-height:1.3;max-width:110px;flex-shrink:0}
+
+.dc-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:9px}
+
+.dc-checks{display:flex;gap:8px}
+.dc-chk-lbl{
+  flex:1;display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;
+  min-height:46px;transition:all .15s;
+}
+.dc-chk-lbl.checked{background:var(--primary-light);border-color:var(--primary)}
+.dc-chk-lbl input[type=checkbox]{width:20px;height:20px;cursor:pointer;flex-shrink:0}
+.dc-chk-lbl .chk{accent-color:#28a745}
+.dc-chk-lbl .chk-half-att{accent-color:#8e44ad}
+.dc-chk-lbl span{font-size:12px;font-weight:700;color:var(--text)}
+.dc-chk-lbl:has(input:disabled){opacity:.35;cursor:not-allowed;pointer-events:none}
+
+.dc-leave-row{display:flex;gap:8px;align-items:stretch}
+.dc-lamt-grp{display:flex;gap:6px}
+.dc-lamt-btn{
+  flex:1;padding:10px 14px;font-size:13px;font-weight:700;
+  border-radius:var(--radius-sm);border:1.5px solid var(--border);
+  background:var(--bg);cursor:pointer;color:var(--sub);
+  min-height:46px;transition:all .15s;
+}
+.dc-lamt-btn.active-full{background:#e6ac00;color:#fff;border-color:#b07800}
+.dc-lamt-btn.active-half{background:#fef3c7;color:#92610a;border-color:#e6ac00}
+.dc-lamt-btn:disabled{opacity:.3;cursor:not-allowed}
+select.dc-leave-sel{
+  flex:1;font-size:13px;padding:10px 10px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);background:var(--bg);color:var(--text);
+  min-height:46px;
+}
+select.dc-leave-sel:disabled{opacity:.35;cursor:not-allowed}
+
+.dc-ot-row{display:flex;align-items:center;gap:10px}
+.dc-ot-label{font-size:13px;color:var(--sub);font-weight:700}
+input.dc-ot-input{
+  width:90px;font-size:14px;padding:10px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);background:var(--bg);color:var(--text);
+  text-align:center;min-height:46px;
+}
+
+.bonus-pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;background:var(--teal);color:#fff;font-weight:700;margin-left:4px}
+
+/* FAB */
+.fab-today{
+  position:fixed;bottom:20px;right:16px;z-index:60;
+  background:var(--primary);color:#fff;border:none;
+  border-radius:28px;padding:13px 20px;
+  font-size:13px;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 20px rgba(31,78,121,.45);
+  display:none;align-items:center;gap:6px;
+  min-height:50px;transition:transform .15s,box-shadow .15s;
+}
+.fab-today:active{transform:scale(.93)}
+
+/* FOOTER */
+.footer{margin-top:18px;padding:14px 20px;text-align:center;font-size:11px;color:var(--muted);background:var(--card);border-top:1px solid var(--border)}
+.footer b{color:var(--primary)}
+
+/* MODAL (bottom sheet) */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:#fff;border-radius:12px;padding:22px 26px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.modal h3{font-size:15px;margin-bottom:14px;color:#1F4E79}
-.modal p{font-size:13px;color:#555;margin-bottom:16px;line-height:1.5}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end}
-.modal-btns button{padding:7px 16px;border-radius:6px;border:none;font-size:13px;cursor:pointer;font-weight:600}
-.btn-cancel{background:#e9ecef;color:#444}.btn-cancel:hover{background:#ddd}
-.btn-confirm{background:#dc3545;color:#fff}.btn-confirm:hover{background:#b02a37}
+.modal-box{
+  background:var(--card);border-radius:var(--radius) var(--radius) 0 0;
+  padding:24px 24px 36px;width:100%;max-width:520px;
+  box-shadow:0 -4px 32px rgba(0,0,0,.2);
+}
+.modal-box h3{font-size:16px;margin-bottom:12px;color:var(--primary)}
+.modal-box p{font-size:13px;color:var(--sub);margin-bottom:18px;line-height:1.6}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end}
+.modal-btns button{padding:11px 22px;border-radius:var(--radius-sm);border:none;font-size:14px;cursor:pointer;font-weight:700;min-height:46px}
+.btn-cancel{background:var(--border);color:var(--sub)}
+.btn-confirm{background:#dc3545;color:#fff}
 
-/* auth screen */
-.auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1F4E79,#2E75B6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
-.auth-box{background:#fff;border-radius:14px;padding:28px 30px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
-.auth-tabs{display:flex;gap:0;margin-bottom:18px;border-radius:8px;overflow:hidden;border:1px solid #ddd}
-.auth-tab{flex:1;text-align:center;padding:9px;font-size:13px;font-weight:600;cursor:pointer;background:#f4f6f8;color:#666}
-.auth-tab.active{background:#1F4E79;color:#fff}
-.auth-title{font-size:17px;font-weight:700;color:#1F4E79;margin-bottom:4px;text-align:center}
-.auth-sub{font-size:11px;color:#888;text-align:center;margin-bottom:18px}
-.auth-field{margin-bottom:12px}
-.auth-field label{display:block;font-size:11px;color:#555;margin-bottom:4px;font-weight:600}
-.auth-field input,.auth-field select{width:100%;padding:8px 10px;border-radius:7px;border:1px solid #ccc;font-size:13px;background:#fafafa;color:#222}
-.auth-error{color:#c0392b;font-size:11.5px;margin-bottom:10px;min-height:14px}
-.auth-btn{width:100%;padding:10px;border:none;border-radius:8px;background:#1F4E79;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px}
-.auth-btn:hover{background:#2E75B6}
+/* AUTH */
+.auth-overlay{
+  position:fixed;inset:0;
+  background:linear-gradient(150deg,#163d5e 0%,var(--primary2) 60%,#1a3a5c 100%);
+  z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.auth-box{
+  background:var(--card);border-radius:18px;padding:28px 24px;
+  max-width:400px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.38);
+  max-height:96vh;overflow-y:auto;
+}
+.auth-logo{text-align:center;margin-bottom:18px}
+.auth-brand{font-size:18px;font-weight:800;color:var(--primary);margin-top:8px}
+.auth-sub-text{font-size:11px;color:var(--muted);margin-top:3px}
+.auth-tabs{display:flex;margin-bottom:18px;border-radius:var(--radius-sm);overflow:hidden;border:1.5px solid var(--border)}
+.auth-tab{flex:1;text-align:center;padding:11px;font-size:13px;font-weight:700;cursor:pointer;background:var(--bg);color:var(--muted);transition:.15s}
+.auth-tab.active{background:var(--primary);color:#fff}
+.auth-field{margin-bottom:13px}
+.auth-field label{display:block;font-size:11px;color:var(--sub);margin-bottom:5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.auth-field input,.auth-field select{
+  width:100%;padding:12px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);font-size:14px;
+  background:var(--bg);color:var(--text);transition:border-color .15s;min-height:48px;
+}
+.auth-field input:focus,.auth-field select:focus{outline:none;border-color:var(--primary)}
+.auth-error{color:#c0392b;font-size:12px;margin-bottom:10px;min-height:16px}
+.auth-btn{
+  width:100%;padding:14px;border:none;border-radius:var(--radius-sm);
+  background:var(--primary);color:#fff;font-size:15px;font-weight:800;
+  cursor:pointer;margin-top:6px;min-height:52px;transition:background .15s;
+}
+.auth-btn:hover,.auth-btn:active{background:var(--primary2)}
 .auth-panel{display:none}
 .auth-panel.active{display:block}
-body.dark .auth-box{background:#1b232e;color:#e8eaed}
-body.dark .auth-field input,body.dark .auth-field select{background:#222c38;color:#e8eaed;border-color:#3a4654}
+.auth-link{text-align:center;margin-top:13px}
+.auth-link a{font-size:12px;color:var(--primary);text-decoration:none;font-weight:700}
+body.dark .auth-box{background:var(--card)}
+body.dark .auth-field input,body.dark .auth-field select{background:#1e2a3a;border-color:var(--border)}
+body.dark .auth-tab{background:var(--bg)}
 
-[dir="rtl"] .header-right{margin-left:0;margin-right:auto}
-[dir="rtl"] .header-user{align-items:flex-start}
+/* ADMIN MODAL */
+#adminModal .modal-box{max-width:700px;max-height:85vh;overflow-y:auto;border-radius:var(--radius) var(--radius) 0 0}
+.admin-tbl{width:100%;font-size:12px;border-collapse:collapse}
+.admin-tbl th{background:var(--primary);color:#fff;padding:8px 10px;text-align:left;font-size:11px}
+.admin-tbl td{padding:8px 10px;border-bottom:1px solid var(--border)}
+
+/* RTL */
+[dir="rtl"] .header-actions{flex-direction:row-reverse}
 [dir="rtl"] .bal-row,[dir="rtl"] .leg,[dir="rtl"] .ctrl-group{direction:rtl}
+[dir="rtl"] .day-card{border-left:none;border-right:4px solid transparent}
+[dir="rtl"] .day-card.dc-work{border-right-color:#28a745}
+[dir="rtl"] .day-card.dc-leave-full,[dir="rtl"] .day-card.dc-leave-half{border-right-color:#e6ac00}
+[dir="rtl"] .day-card.dc-ph{border-right-color:#c0392b}
+[dir="rtl"] .day-card.dc-ph-att{border-right-color:#004085}
+[dir="rtl"] .day-card.dc-fri{border-right-color:#adb5bd}
+[dir="rtl"] .day-card.dc-half-att{border-right-color:#8e44ad}
+[dir="rtl"] .fab-today{right:auto;left:16px}
 
-/* responsive / mobile */
-@media (max-width:760px){
+/* RESPONSIVE */
+@media(max-width:768px){
   .header{padding:10px 12px;gap:8px}
-  .header h1{font-size:14px}
-  .header-right{width:100%;justify-content:space-between;margin:0;order:3}
+  .header-title h1{font-size:14px}
+  .header-title .hsub{display:none}
+  .user-chip small{display:none}
+  .toggle-wrap span:first-child,.toggle-wrap span:last-child{display:none}
+  .main{padding:10px;padding-bottom:88px}
+  .controls-toggle{display:flex;margin-bottom:0;border-radius:var(--radius) var(--radius) 0 0}
+  .controls{border-radius:0 0 var(--radius) var(--radius);display:none;border-top:1px solid var(--border)}
+  .controls.open{display:flex}
   .balance-panel{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(2,1fr)}
-  .stat-val{font-size:18px}
-  .auth-box{padding:20px 18px}
-  .controls{padding:9px 10px}
-  .ctrl-group input[type=number]{width:48px}
-  table{min-width:760px}
-  .footer{font-size:10px;padding:10px}
+  .stat-val{font-size:20px}
+  .legend{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;gap:12px}
+  .leg{white-space:nowrap}
+  .table-wrap{display:none}
+  .cards-wrap{display:flex}
+  .fab-today{display:flex}
 }
-@media (max-width:420px){
+@media(max-width:380px){
+  .user-chip{display:none}
   .stats{grid-template-columns:repeat(2,1fr)}
-  .header-user{display:none}
-  .toggle-wrap span{display:none}
 }
 </style>
 </head>
@@ -210,36 +394,32 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
 <!-- AUTH SCREEN -->
 <div class="auth-overlay" id="authScreen">
   <div class="auth-box">
-    <div class="auth-title" data-i18n="appTitle">Egypt Attendance Tracker</div>
-    <div class="auth-sub" data-i18n="authSub">Sign in to your account or create a new one</div>
+    <div class="auth-logo">
+      <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#1F4E79" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="12" y2="18"/></svg>
+      <div class="auth-brand" data-i18n="appTitle">Egypt Attendance Tracker</div>
+      <div class="auth-sub-text" data-i18n="authSub">Sign in to your account or create a new one</div>
+    </div>
     <div class="auth-tabs">
       <div class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')" data-i18n="loginTab">Login</div>
       <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')" data-i18n="signupTab">Sign Up</div>
     </div>
-
     <div class="auth-panel active" id="panelLogin">
-      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="loginEmpId" autocomplete="username"></div>
-      <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="loginPassword" autocomplete="current-password"></div>
+      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="loginEmpId" inputmode="numeric" autocomplete="username" placeholder="e.g. 1234"></div>
+      <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••"></div>
       <div class="auth-error" id="loginError"></div>
       <button class="auth-btn" onclick="doLogin()" data-i18n="loginBtn">Login</button>
-      <div style="text-align:center;margin-top:10px">
-        <a href="javascript:void(0)" onclick="openForgot()" style="font-size:11.5px;color:#1F4E79;text-decoration:underline" data-i18n="forgotPassword">Forgot password?</a>
-      </div>
+      <div class="auth-link"><a href="javascript:void(0)" onclick="openForgot()" data-i18n="forgotPassword">Forgot password?</a></div>
     </div>
-
     <div class="auth-panel" id="panelForgot">
-      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="fpEmpId"></div>
+      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="fpEmpId" inputmode="numeric" placeholder="e.g. 1234"></div>
       <div class="auth-error" id="forgotError"></div>
-      <div class="auth-error" id="forgotSuccess" style="color:#1a7a3f"></div>
+      <div class="auth-error" id="forgotSuccess" style="color:var(--green)"></div>
       <button class="auth-btn" onclick="doForgotPassword()" data-i18n="sendResetLink">Send reset link</button>
-      <div style="text-align:center;margin-top:10px">
-        <a href="javascript:void(0)" onclick="switchAuthTab('login')" style="font-size:11.5px;color:#1F4E79;text-decoration:underline" data-i18n="backToLogin">Back to login</a>
-      </div>
+      <div class="auth-link"><a href="javascript:void(0)" onclick="switchAuthTab('login')" data-i18n="backToLogin">Back to login</a></div>
     </div>
-
     <div class="auth-panel" id="panelSignup">
-      <div class="auth-field"><label data-i18n="fullName">Full Name</label><input type="text" id="suName"></div>
-      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="suEmpId"></div>
+      <div class="auth-field"><label data-i18n="fullName">Full Name</label><input type="text" id="suName" autocomplete="name"></div>
+      <div class="auth-field"><label data-i18n="empId">Employee ID</label><input type="text" id="suEmpId" inputmode="numeric"></div>
       <div class="auth-field"><label data-i18n="email">Email</label><input type="email" id="suEmail" autocomplete="email"></div>
       <div class="auth-field"><label data-i18n="password">Password</label><input type="password" id="suPassword"></div>
       <div class="auth-field"><label data-i18n="role">Job Role</label>
@@ -258,9 +438,9 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
   </div>
 </div>
 
-<!-- confirm clear modal -->
+<!-- CLEAR MODAL -->
 <div class="modal-overlay" id="clearModal">
-  <div class="modal">
+  <div class="modal-box">
     <h3 data-i18n="clearTitle">Clear all data?</h3>
     <p data-i18n="clearBody">This will reset all checkmarks, attendance, leave records and restore defaults. This cannot be undone.</p>
     <div class="modal-btns">
@@ -270,40 +450,41 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
   </div>
 </div>
 
+<!-- HEADER -->
 <div class="header">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-  <div>
-    <h1 id="headerTitle">Egypt Attendance Tracker</h1>
-    <p data-i18n="headerSub">Work/leave cycle &bull; Annual leave balance &bull; Public holiday bonus</p>
-    <p class="header-credit" data-i18n="headerCredit">By Eng. Mohamed Metwaly</p>
+  <svg class="header-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+  <div class="header-title">
+    <h1 id="headerTitle">Atrium Attendance Tracker</h1>
+    <div class="hsub" data-i18n="headerSub">Work/leave cycle • Annual leave balance • Public holiday bonus</div>
+    <div class="hcredit" data-i18n="headerCredit">By Eng. Mohamed Metwaly</div>
   </div>
-  <div class="header-right">
+  <div class="header-actions">
+    <div class="user-chip" id="userChip">
+      <b id="headerUserName">—</b>
+      <small id="headerUserRole">—</small>
+    </div>
     <div class="toggle-wrap">
       <span id="langLabel">EN</span>
       <label class="switch"><input type="checkbox" id="langToggle"><span class="slider"></span></label>
       <span>AR</span>
     </div>
     <div class="toggle-wrap">
-      <span>&#9728;</span>
+      <span>☀</span>
       <label class="switch"><input type="checkbox" id="darkToggle"><span class="slider"></span></label>
-      <span>&#127769;</span>
+      <span>🌙</span>
     </div>
-    <div class="header-user">
-      <b id="headerUserName">—</b>
-      <span id="headerUserRole">—</span>
-    </div>
-    <button class="icon-btn" id="adminBtn" style="display:none" onclick="openAdminPanel()" data-i18n="adminPanel">Admin Panel</button>
-    <button class="icon-btn btn-logout" onclick="doLogout()" data-i18n="logout">Logout</button>
+    <button class="icon-btn" id="adminBtn" style="display:none" onclick="openAdminPanel()" data-i18n="adminPanel">Admin</button>
+    <button class="icon-btn" onclick="doLogout()" title="Logout">⏻</button>
   </div>
 </div>
 
-<!-- admin panel modal -->
+<!-- ADMIN MODAL -->
 <div class="modal-overlay" id="adminModal">
-  <div class="modal" style="max-width:680px;width:95%">
+  <div class="modal-box" style="max-width:700px">
     <h3 data-i18n="adminUsersTitle">All Users</h3>
-    <div style="max-height:60vh;overflow:auto;margin-bottom:14px">
-      <table style="width:100%;font-size:12px;border-collapse:collapse" id="adminTable">
-        <thead><tr style="text-align:left">
+    <div style="overflow-x:auto;margin-bottom:14px">
+      <table class="admin-tbl" id="adminTable">
+        <thead><tr>
           <th data-i18n="adminEmpId">Emp ID</th><th data-i18n="adminName">Name</th><th data-i18n="adminRole">Role</th><th data-i18n="adminEmail">Email</th><th></th>
         </tr></thead>
         <tbody id="adminTableBody"></tbody>
@@ -316,21 +497,26 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
 </div>
 
 <div class="main">
-
   <!-- cycle settings -->
-  <div class="controls">
-    <div class="ctrl-group"><label data-i18n="startDate">Start date</label><input type="date" id="startDate"></div>
-    <div class="ctrl-group"><label data-i18n="workDaysCycle">Work days/cycle</label><input type="number" id="workDays" value="24" min="1" max="90"></div>
-    <div class="ctrl-group"><label data-i18n="leaveDaysCycle">Leave days/cycle</label><input type="number" id="leaveDays" value="6" min="1" max="60"></div>
-    <label class="ph-toggle"><input type="checkbox" id="phAsWork" checked> <span data-i18n="phAsWork">Count public holidays in cycle</span></label>
-    <div class="divider"></div>
-    <button class="btn btn-clear" onclick="document.getElementById('clearModal').classList.add('open')">&#10006; <span data-i18n="clearAll">Clear all</span></button>
-    <button class="btn btn-export" onclick="exportCyclePDF()">&#8659; <span data-i18n="exportPdf">Export PDF</span></button>
+  <div class="controls-wrap">
+    <button class="controls-toggle" id="controlsToggle" onclick="toggleControls()">
+      <span>⚙ <span data-i18n="settingsTitle">Cycle Settings</span></span>
+      <span class="arr">▼</span>
+    </button>
+    <div class="controls" id="controlsPanel">
+      <div class="ctrl-group"><label data-i18n="startDate">Start date</label><input type="date" id="startDate"></div>
+      <div class="ctrl-group"><label data-i18n="workDaysCycle">Work days/cycle</label><input type="number" id="workDays" value="24" min="1" max="90"></div>
+      <div class="ctrl-group"><label data-i18n="leaveDaysCycle">Leave days/cycle</label><input type="number" id="leaveDays" value="6" min="1" max="60"></div>
+      <label class="ph-toggle"><input type="checkbox" id="phAsWork" checked> <span data-i18n="phAsWork">Count public holidays in cycle</span></label>
+      <div class="divider"></div>
+      <button class="btn btn-clear" onclick="document.getElementById('clearModal').classList.add('open')">✕ <span data-i18n="clearAll">Clear all</span></button>
+      <button class="btn btn-export" onclick="exportCyclePDF()">⬇ <span data-i18n="exportPdf">Export PDF</span></button>
+    </div>
   </div>
 
   <!-- annual leave settings -->
   <div class="bal-settings">
-    <div class="bal-settings-title">&#128203; <span data-i18n="balSettingsTitle">Annual leave balance settings</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px" data-i18n="balSettingsHint">— set your actual entitlement</span></div>
+    <div class="bal-settings-title">📋 <span data-i18n="balSettingsTitle">Annual leave balance settings</span> <span style="font-size:10px;font-weight:400;color:var(--muted);margin-left:6px" data-i18n="balSettingsHint">— set your actual entitlement</span></div>
     <div class="bal-settings-row">
       <div class="bsi"><label data-i18n="regDays">Regular leave days</label><input type="number" id="regMax" value="15" min="0" max="60" step="0.5"><span class="bsi-note" data-i18n="perYear">days/year</span></div>
       <div class="bsi"><label data-i18n="emDays">Emergency leave days</label><input type="number" id="emMax" value="6" min="0" max="30"><span class="bsi-note" data-i18n="perYear">days/year</span></div>
@@ -341,13 +527,13 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
   <!-- balance panel -->
   <div class="balance-panel">
     <div class="bal-card">
-      <div class="bal-title">&#128196; <span data-i18n="annualBalance">Annual leave balance</span></div>
+      <div class="bal-title">📄 <span data-i18n="annualBalance">Annual leave balance</span></div>
       <div class="bal-rows">
         <div class="bal-row"><span data-i18n="regularLeave">Regular leave</span><span id="b-reg-used">0</span></div>
         <div class="bal-bar-wrap"><div class="bal-bar bar-green" id="bar-reg" style="width:0%"></div></div>
         <div class="bal-row"><span data-i18n="remainingReg">Remaining regular</span><span id="b-reg-rem" class="ok">15</span></div>
       </div>
-      <div class="bal-rows" style="margin-top:8px">
+      <div class="bal-rows" style="margin-top:10px">
         <div class="bal-row"><span data-i18n="emergencyLeave">Emergency leave</span><span id="b-em-used">0</span></div>
         <div class="bal-bar-wrap"><div class="bal-bar bar-orange" id="bar-em" style="width:0%"></div></div>
         <div class="bal-row"><span data-i18n="remainingEm">Remaining emergency</span><span id="b-em-rem" class="ok">6</span></div>
@@ -355,12 +541,12 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
       <div class="bal-note" id="bal-note" data-i18n="balNoteDefault">Mark leave days in the table below and select type.</div>
     </div>
     <div class="bal-card" id="phBonusCard">
-      <div class="bal-title">&#127942; <span data-i18n="phBonusTitle">Public holiday bonus</span></div>
+      <div class="bal-title">🏆 <span data-i18n="phBonusTitle">Public holiday bonus</span></div>
       <div class="bal-rows">
         <div class="bal-row"><span data-i18n="phDaysAttended">PH days attended</span><span id="b-ph-att" class="bonus-color">0</span></div>
-        <div class="bal-row"><span data-i18n="bonusEarned">Bonus days earned</span><span id="b-bonus" class="bonus-color" style="font-size:14px;font-weight:700">+0</span></div>
-        <div class="bal-row" style="margin-top:4px"><span data-i18n="effRegTotal">Effective regular total</span><span id="b-eff-reg" class="ok" style="font-size:14px">15</span></div>
-        <div class="bal-row"><span data-i18n="effRem">Effective remaining</span><span id="b-eff-rem" class="ok" style="font-size:14px">15</span></div>
+        <div class="bal-row"><span data-i18n="bonusEarned">Bonus days earned</span><span id="b-bonus" class="bonus-color" style="font-size:15px;font-weight:700">+0</span></div>
+        <div class="bal-row" style="margin-top:6px"><span data-i18n="effRegTotal">Effective regular total</span><span id="b-eff-reg" class="ok" style="font-size:15px">15</span></div>
+        <div class="bal-row"><span data-i18n="effRem">Effective remaining</span><span id="b-eff-rem" class="ok" style="font-size:15px">15</span></div>
       </div>
       <div class="bal-note" id="phBonusNote" data-i18n="phBonusNote">Each public holiday you attend (excluding Fridays) adds +1 compensatory day to your regular balance.</div>
     </div>
@@ -391,7 +577,7 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
     <span class="leg"><span class="dot d-fri"></span><span data-i18n="legFri">Friday</span></span>
   </div>
 
-  <!-- table -->
+  <!-- TABLE (desktop) -->
   <div class="table-wrap">
     <table>
       <thead><tr id="tableHeadRow">
@@ -402,10 +588,18 @@ body.dark .auth-field input,body.dark .auth-field select{background:#222c38;colo
       <tbody id="calBody"></tbody>
     </table>
   </div>
+
+  <!-- CARDS (mobile) -->
+  <div class="cards-wrap" id="cardsWrap"></div>
 </div>
 
+<!-- FAB -->
+<button class="fab-today" id="fabToday" onclick="scrollToToday()">
+  📅 <span data-i18n="todayBtn">Today</span>
+</button>
+
 <div class="footer">
-  &copy; <span id="footerYear"></span> Atrium Attendance Tracker - By Eng. Mohamed Metwaly
+  &copy; <span id="footerYear"></span> Atrium Attendance Tracker — By Eng. Mohamed Metwaly
 </div>
 
 <script>
@@ -423,7 +617,7 @@ const EG_HOLIDAYS={
 };
 const DAYS=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const DAYS_AR=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
-const ROLES_HOURLY=["Senior","Junior"]; // overtime tracking roles
+const ROLES_HOURLY=["Senior","Junior"];
 
 const I18N={
   en:{
@@ -432,6 +626,7 @@ const I18N={
     fullName:"Full Name",role:"Job Role",signupBtn:"Create Account",
     headerSub:"Work/leave cycle • Annual leave balance • Public holiday bonus",
     headerCredit:"By Eng. Mohamed Metwaly",logout:"Logout",
+    settingsTitle:"Cycle Settings",todayBtn:"Today",
     startDate:"Start date",workDaysCycle:"Work days/cycle",leaveDaysCycle:"Leave days/cycle",
     phAsWork:"Count public holidays in cycle",clearAll:"Clear all",exportPdf:"Export PDF",
     balSettingsTitle:"Annual leave balance settings",balSettingsHint:"— set your actual entitlement",
@@ -458,13 +653,15 @@ const I18N={
     resetLinkSent:"A password reset link has been sent to your email.",
     adminPanel:"Admin Panel",adminUsersTitle:"All Users",adminDelete:"Delete",adminConfirmDelete:"Delete this user's account data? This cannot be undone.",
     adminEmpId:"Emp ID",adminName:"Name",adminRole:"Role",adminEmail:"Email",adminClose:"Close",
+    dcAttended:"Attended",dcHalfAtt:"Half att.",dcFull:"Full",dcHalf:"Half",
   },
   ar:{
-    appTitle:"متابعة الحضور والإجازات - مصر",authSub:"سجّل دخولك أو أنشئ حساب جديد",
+    appTitle:"متابعة الحضور والإجازات",authSub:"سجّل دخولك أو أنشئ حساب جديد",
     loginTab:"تسجيل الدخول",signupTab:"إنشاء حساب",empId:"كود الموظف",password:"كلمة السر",loginBtn:"دخول",
     fullName:"اسم المستخدم",role:"الوظيفة",signupBtn:"إنشاء الحساب",
     headerSub:"دورة العمل والإجازة • رصيد الإجازة السنوي • بونص الإجازات الرسمية",
-    headerCredit:"بواسطة م. محمد متولي",logout:"تسجيل خروج",
+    headerCredit:"بواسطة م. محمد متولي",logout:"خروج",
+    settingsTitle:"إعدادات الدورة",todayBtn:"اليوم",
     startDate:"تاريخ البداية",workDaysCycle:"أيام العمل/الدورة",leaveDaysCycle:"أيام الإجازة/الدورة",
     phAsWork:"حساب الإجازات الرسمية ضمن الدورة",clearAll:"حذف الكل",exportPdf:"تصدير PDF",
     balSettingsTitle:"إعدادات رصيد الإجازة السنوي",balSettingsHint:"— حدد رصيدك الفعلي",
@@ -482,7 +679,7 @@ const I18N={
     legWork:"حضور (يوم كامل)",legHalf:"حضور (نصف يوم)",legLeaveFull:"إجازة (يوم كامل)",legLeaveHalf:"إجازة (نصف يوم)",
     legPh:"إجازة رسمية (عطلة)",legPhAtt:"حضور إجازة رسمية ← +1 للرصيد",legFri:"الجمعة",
     thDate:"التاريخ",thDay:"اليوم",thCycleType:"نوع اليوم",thPh:"إجازة رسمية",thNote:"ملاحظة",thAttended:"الحضور",
-    thHalfAtt:"حضور نصف يوم",thLeaveTaken:"الإجازة المأخوذة",thFullHalf:"كامل / نصف",thLeaveType:"نوع الإجازة",thOt:"ساعات إضافية",
+    thHalfAtt:"نصف يوم",thLeaveTaken:"الإجازة المأخوذة",thFullHalf:"كامل / نصف",thLeaveType:"نوع الإجازة",thOt:"ساعات إضافية",
     clearTitle:"حذف كل البيانات؟",clearBody:"سيتم إعادة ضبط كل علامات الحضور والإجازات والإعدادات الافتراضية. لا يمكن التراجع عن هذا.",
     cancel:"إلغاء",clearConfirm:"نعم، حذف الكل",
     errFill:"من فضلك أدخل كل البيانات المطلوبة.",errExists:"يوجد حساب بهذا الكود من قبل.",errLogin:"كود الموظف أو كلمة السر غير صحيحة.",
@@ -491,12 +688,13 @@ const I18N={
     resetLinkSent:"تم إرسال رابط استعادة كلمة السر إلى بريدك الإلكتروني.",
     adminPanel:"لوحة الإدارة",adminUsersTitle:"كل المستخدمين",adminDelete:"حذف",adminConfirmDelete:"حذف بيانات حساب هذا المستخدم؟ لا يمكن التراجع عن هذا.",
     adminEmpId:"كود الموظف",adminName:"الاسم",adminRole:"الوظيفة",adminEmail:"البريد الإلكتروني",adminClose:"إغلاق",
+    dcAttended:"حضور",dcHalfAtt:"نصف يوم",dcFull:"كامل",dcHalf:"نصف",
   }
 };
 let curLang=localStorage.getItem("eg_lang")||"en";
 let curDark=localStorage.getItem("eg_dark")==="1";
 
-function t(key){return (I18N[curLang]&&I18N[curLang][key])||I18N.en[key]||key;}
+function t(key){return(I18N[curLang]&&I18N[curLang][key])||I18N.en[key]||key;}
 
 function applyI18n(){
   document.documentElement.lang=curLang;
@@ -527,7 +725,23 @@ document.getElementById("darkToggle").addEventListener("change",function(){
   applyDark();
 });
 
-/* ---------------- FIREBASE ---------------- */
+/* CONTROLS TOGGLE */
+function toggleControls(){
+  const panel=document.getElementById("controlsPanel");
+  const btn=document.getElementById("controlsToggle");
+  panel.classList.toggle("open");
+  btn.classList.toggle("open");
+}
+
+/* FAB / scroll to today */
+function scrollToToday(){
+  const iso=isoDate(new Date());
+  const mobile=window.innerWidth<768;
+  const el=document.getElementById(mobile?"card-"+iso:"row-"+iso);
+  if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+/* FIREBASE */
 const firebaseConfig={
   apiKey:"AIzaSyBwwesTfex8xpF9_AZTEq5A048VIRTjDe0",
   authDomain:"atrium-attendance.firebaseapp.com",
@@ -541,22 +755,26 @@ const fbAuth=firebase.auth();
 const db=firebase.firestore();
 db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
 
-/* ---------------- AUTH ---------------- */
-let currentUser=null; // {uid, empId, fullName, role}
+/* AUTH */
+let currentUser=null;
 let authBusy=false;
 
 function switchAuthTab(which){
-  document.getElementById("tabLogin").classList.toggle("active",which==="login");
-  document.getElementById("tabSignup").classList.toggle("active",which==="signup");
+  ["login","signup","forgot"].forEach(w=>{
+    document.getElementById("tab"+w.charAt(0).toUpperCase()+w.slice(1))?.classList.toggle("active",w===which);
+    document.getElementById("panel"+w.charAt(0).toUpperCase()+w.slice(1))?.classList.toggle("active",w===which);
+  });
+  // tabForgot doesn't exist as a tab button, handle panels only
   document.getElementById("panelLogin").classList.toggle("active",which==="login");
   document.getElementById("panelSignup").classList.toggle("active",which==="signup");
   document.getElementById("panelForgot").classList.toggle("active",which==="forgot");
-  document.getElementById("loginError").textContent="";
-  document.getElementById("signupError").textContent="";
-  document.getElementById("forgotError").textContent="";
-  document.getElementById("forgotSuccess").textContent="";
+  document.getElementById("tabLogin").classList.toggle("active",which==="login");
+  document.getElementById("tabSignup").classList.toggle("active",which==="signup");
+  ["loginError","signupError","forgotError","forgotSuccess"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent="";
+  });
 }
-function openForgot(){ switchAuthTab("forgot"); }
+function openForgot(){switchAuthTab("forgot");}
 
 function fbErrMsg(code){
   if(code==="auth/email-already-in-use") return t("errExists");
@@ -577,7 +795,7 @@ async function doSignup(){
   const role=document.getElementById("suRole").value;
   const err=document.getElementById("signupError");
   err.textContent="";
-  if(!name||!empId||!email||!pass||!role){ err.textContent=t("errFill"); return; }
+  if(!name||!empId||!email||!pass||!role){err.textContent=t("errFill");return;}
   authBusy=true;
   try{
     const cred=await fbAuth.createUserWithEmailAndPassword(email,pass);
@@ -587,9 +805,8 @@ async function doSignup(){
     await db.collection("users").doc(uid).set(profile);
     await db.collection("empIndex").doc(empId).set({uid,email});
     enterApp(uid,profile);
-  }catch(e){
-    err.textContent=fbErrMsg(e.code);
-  }finally{ authBusy=false; }
+  }catch(e){err.textContent=fbErrMsg(e.code);}
+  finally{authBusy=false;}
 }
 
 async function doLogin(){
@@ -598,20 +815,19 @@ async function doLogin(){
   const pass=document.getElementById("loginPassword").value;
   const err=document.getElementById("loginError");
   err.textContent="";
-  if(!empId||!pass){ err.textContent=t("errFill"); return; }
+  if(!empId||!pass){err.textContent=t("errFill");return;}
   authBusy=true;
   try{
     const idxDoc=await db.collection("empIndex").doc(empId).get();
-    if(!idxDoc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
+    if(!idxDoc.exists){err.textContent=t("errLogin");authBusy=false;return;}
     const email=idxDoc.data().email;
     const cred=await fbAuth.signInWithEmailAndPassword(email,pass);
     const uid=cred.user.uid;
     const doc=await db.collection("users").doc(uid).get();
-    if(!doc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
+    if(!doc.exists){err.textContent=t("errLogin");authBusy=false;return;}
     enterApp(uid,doc.data());
-  }catch(e){
-    err.textContent=fbErrMsg(e.code);
-  }finally{ authBusy=false; }
+  }catch(e){err.textContent=fbErrMsg(e.code);}
+  finally{authBusy=false;}
 }
 
 async function doForgotPassword(){
@@ -619,18 +835,16 @@ async function doForgotPassword(){
   const empId=document.getElementById("fpEmpId").value.trim();
   const err=document.getElementById("forgotError");
   const ok=document.getElementById("forgotSuccess");
-  err.textContent=""; ok.textContent="";
-  if(!empId){ err.textContent=t("errFill"); return; }
+  err.textContent="";ok.textContent="";
+  if(!empId){err.textContent=t("errFill");return;}
   authBusy=true;
   try{
     const idxDoc=await db.collection("empIndex").doc(empId).get();
-    if(!idxDoc.exists){ err.textContent=t("errLogin"); authBusy=false; return; }
-    const email=idxDoc.data().email;
-    await fbAuth.sendPasswordResetEmail(email);
+    if(!idxDoc.exists){err.textContent=t("errLogin");authBusy=false;return;}
+    await fbAuth.sendPasswordResetEmail(idxDoc.data().email);
     ok.textContent=t("resetLinkSent");
-  }catch(e){
-    err.textContent=fbErrMsg(e.code);
-  }finally{ authBusy=false; }
+  }catch(e){err.textContent=fbErrMsg(e.code);}
+  finally{authBusy=false;}
 }
 
 function doLogout(){
@@ -640,6 +854,7 @@ function doLogout(){
   document.querySelector(".main").style.display="none";
   document.querySelector(".header").style.visibility="hidden";
   document.querySelector(".footer").style.visibility="hidden";
+  document.getElementById("fabToday").style.display="none";
   document.getElementById("loginEmpId").value="";
   document.getElementById("loginPassword").value="";
 }
@@ -659,7 +874,7 @@ function resetDefaults(){
   document.getElementById("regMax").value=15;
   document.getElementById("emMax").value=6;
   document.getElementById("carryOver").value=0;
-  attended={}; halfAtt={}; leaveAmt={}; leaveType={}; otHours={};
+  attended={};halfAtt={};leaveAmt={};leaveType={};otHours={};
 }
 
 async function enterApp(uid,acc){
@@ -675,7 +890,7 @@ async function enterApp(uid,acc){
   render();
 }
 
-function isHourlyRole(){ return currentUser && ROLES_HOURLY.includes(currentUser.role); }
+function isHourlyRole(){return currentUser&&ROLES_HOURLY.includes(currentUser.role);}
 
 function setupRoleUI(){
   const hourly=isHourlyRole();
@@ -689,21 +904,21 @@ function setupRoleUI(){
 
 async function openAdminPanel(){
   const tbody=document.getElementById("adminTableBody");
-  tbody.innerHTML="<tr><td colspan='5' style='text-align:center;padding:10px'>...</td></tr>";
+  tbody.innerHTML="<tr><td colspan='5' style='text-align:center;padding:14px'>...</td></tr>";
   document.getElementById("adminModal").classList.add("open");
   try{
     const snap=await db.collection("users").get();
     tbody.innerHTML="";
     snap.forEach(doc=>{
-      const u=doc.data(); const uid=doc.id;
+      const u=doc.data();const uid=doc.id;
       const isMe=currentUser&&uid===currentUser.uid;
       const tr=document.createElement("tr");
       tr.innerHTML=`<td>${u.empId||""}</td><td>${u.fullName||""}</td><td>${u.role||""}</td><td style="font-size:10px">${u.email||""}</td>
-        <td>${isMe?"":'<button class="btn btn-clear" style="padding:3px 8px" onclick="adminDeleteUser(\''+uid+'\',\''+(u.empId||"")+'\')">'+t("adminDelete")+'</button>'}</td>`;
+        <td>${isMe?"":'<button class="btn btn-clear" style="padding:4px 10px;font-size:11px" onclick="adminDeleteUser(\''+uid+'\',\''+(u.empId||"")+'\')">'+t("adminDelete")+'</button>'}</td>`;
       tbody.appendChild(tr);
     });
   }catch(e){
-    tbody.innerHTML="<tr><td colspan='5' style='text-align:center;padding:10px;color:#c0392b'>Error loading users</td></tr>";
+    tbody.innerHTML="<tr><td colspan='5' style='text-align:center;padding:14px;color:#c0392b'>Error loading users</td></tr>";
   }
 }
 
@@ -714,18 +929,16 @@ async function adminDeleteUser(uid,empId){
     await db.collection("attendance").doc(uid).delete();
     if(empId) await db.collection("empIndex").doc(empId).delete();
     openAdminPanel();
-  }catch(e){
-    alert("Error: "+e.message);
-  }
+  }catch(e){alert("Error: "+e.message);}
 }
 
-/* ---------------- DATA ---------------- */
+/* DATA */
 let rows=[];
-let attended={}, halfAtt={}, leaveAmt={}, leaveType={}, otHours={};
+let attended={},halfAtt={},leaveAmt={},leaveType={},otHours={};
 let saveTimer=null;
 
 function getSettings(){
-  return {
+  return{
     regMax:parseFloat(document.getElementById("regMax").value)||15,
     emMax:parseInt(document.getElementById("emMax").value)||6,
     carryOver:parseInt(document.getElementById("carryOver").value)||0,
@@ -759,31 +972,31 @@ async function load(){
     if(d.regMax!==undefined)   document.getElementById("regMax").value=d.regMax;
     if(d.emMax!==undefined)    document.getElementById("emMax").value=d.emMax;
     if(d.carryOver!==undefined)document.getElementById("carryOver").value=d.carryOver;
-    attended=d.attended||{}; halfAtt=d.halfAtt||{};
-    leaveAmt=d.leaveAmt||{}; leaveType=d.leaveType||{};
+    attended=d.attended||{};halfAtt=d.halfAtt||{};
+    leaveAmt=d.leaveAmt||{};leaveType=d.leaveType||{};
     otHours=d.otHours||{};
   }catch(e){}
 }
 
 function confirmClear(){
-  attended={}; halfAtt={}; leaveAmt={}; leaveType={}; otHours={};
+  attended={};halfAtt={};leaveAmt={};leaveType={};otHours={};
   document.getElementById("clearModal").classList.remove("open");
-  save(); render();
+  save();render();
 }
 
 function isoDate(d){return d.toISOString().slice(0,10);}
 function fmtDate(d){return d.toLocaleDateString(curLang==="ar"?"ar-EG":"en-GB",{day:"2-digit",month:"short",year:"numeric"});}
 
 function buildRows(){
-  const {startDate,workDays:W,leaveDays:L,phAsWork}=getSettings();
+  const{startDate,workDays:W,leaveDays:L,phAsWork}=getSettings();
   const start=new Date(startDate);
   if(isNaN(start))return;
   const cycle=W+L;
-  rows=[]; let nonFri=0;
+  rows=[];let nonFri=0;
   for(let i=0;i<365;i++){
-    const d=new Date(start); d.setDate(d.getDate()+i);
-    const iso=isoDate(d); const dow=d.getDay(); const isFri=dow===5;
-    const phName=EG_HOLIDAYS[iso]||null; const isPH=!!phName;
+    const d=new Date(start);d.setDate(d.getDate()+i);
+    const iso=isoDate(d);const dow=d.getDay();const isFri=dow===5;
+    const phName=EG_HOLIDAYS[iso]||null;const isPH=!!phName;
     let cycleType="",cls="r-base",note="",cyclePos=null,seqN=null;
     if(isFri){cycleType="Friday";cls="r-fri";note="Weekly off";}
     else{
@@ -791,12 +1004,12 @@ function buildRows(){
       if(countThis) nonFri++;
       if(!phAsWork&&isPH){cycleType="Public holiday";cls="r-ph";note="Official holiday";}
       else{
-        cyclePos=((nonFri-1)%cycle)+1; seqN=nonFri;
+        cyclePos=((nonFri-1)%cycle)+1;seqN=nonFri;
         if(cyclePos<=W){
           cycleType=isPH?"Work day (PH)":"Work day";
           cls=isPH?"r-ph":"r-work";
           note=(isPH?"PH — ":"")+"Day "+cyclePos+" of "+W;
-        } else {
+        }else{
           cycleType="Leave day";cls="r-leave-full";
           note="Cycle leave "+(cyclePos-W)+" of "+L;
         }
@@ -820,18 +1033,26 @@ function getRowClass(r){
   return r.cls;
 }
 
-/* OT period: 21st of a month to 20th of next month */
+function rowClassToCard(rc){
+  const map={
+    "r-work":"dc-work","r-leave-full":"dc-leave-full","r-leave-half":"dc-leave-half",
+    "r-ph":"dc-ph","r-ph-att":"dc-ph-att","r-fri":"dc-fri","r-half-att":"dc-half-att","r-base":"dc-base"
+  };
+  return map[rc]||"dc-base";
+}
+
 function otPeriodFor(iso){
   const d=new Date(iso);
-  let y=d.getFullYear(), m=d.getMonth();
-  if(d.getDate()<21){ m=m-1; if(m<0){m=11;y--;} }
+  let y=d.getFullYear(),m=d.getMonth();
+  if(d.getDate()<21){m=m-1;if(m<0){m=11;y--;}}
   return y+"-"+String(m+1).padStart(2,"0");
 }
-function otRate(r){ if(r.isPH) return 2; if(r.isFri) return 1; return 1.5; }
+function otRate(r){if(r.isPH) return 2;if(r.isFri) return 1;return 1.5;}
 
+/* ---- TABLE RENDER ---- */
 function render(){
   buildRows();
-  const tbody=document.getElementById("calBody"); tbody.innerHTML="";
+  const tbody=document.getElementById("calBody");tbody.innerHTML="";
   const todayIso=isoDate(new Date());
   const hourly=isHourlyRole();
   rows.forEach(r=>{
@@ -840,10 +1061,9 @@ function render(){
     const la=leaveAmt[r.iso]||0;
     const ltype=leaveType[r.iso]||"regular";
     const isPHatt=r.isPH&&att;
-    const canAtt=true; // Friday attendance now allowed (counts toward cycle/bonus rules)
-    const canHalfAtt=att&&canAtt&&!r.isFri&&!r.isPH; // Friday/PH: full-day attendance only
+    const canHalfAtt=att&&!r.isFri&&!r.isPH;
     const canLeave=!r.isFri&&!att&&!r.isPH;
-    const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff"); // half only allowed for regular type
+    const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff");
     const bonusTag=isPHatt&&!r.isFri?'<span class="bonus-tag">+1</span>':"";
     const rowCls=getRowClass(r);
     const tr=document.createElement("tr");
@@ -858,7 +1078,7 @@ function render(){
       <td>${r.cycleType}${r.cyclePos!==null?'<span class="badge">'+r.cyclePos+"/"+r.W+"</span>":""}</td>
       <td class="td-phname">${r.phName||""}${bonusTag}</td>
       <td class="td-note">${r.note}</td>
-      <td class="td-center"><input type="checkbox" class="chk" data-iso="${r.iso}" ${att?"checked":""} ${!canAtt?"disabled":""}></td>
+      <td class="td-center"><input type="checkbox" class="chk" data-iso="${r.iso}" ${att?"checked":""}></td>
       <td class="td-center"><input type="checkbox" class="chk-half-att" data-iso="${r.iso}" ${half?"checked":""} ${!canHalfAtt?"disabled":""}></td>
       <td class="td-center">
         <div class="leave-amt">
@@ -868,7 +1088,7 @@ function render(){
       </td>
       <td class="td-center">
         <select class="leave-sel" data-iso="${r.iso}" ${(la===0||!canLeave)?"disabled":""}>
-          <option value="regular"   ${ltype==="regular"?"selected":""}>${t("leaveTypeRegular")}</option>
+          <option value="regular" ${ltype==="regular"?"selected":""}>${t("leaveTypeRegular")}</option>
           <option value="emergency" ${la===0.5?"disabled":""} ${ltype==="emergency"?"selected":""}>${t("leaveTypeEmergency")}</option>
           <option value="dayoff" ${la===0.5?"disabled":""} ${ltype==="dayoff"?"selected":""}>${t("leaveTypeDayOff")}</option>
         </select>
@@ -877,57 +1097,153 @@ function render(){
   });
 
   tbody.querySelectorAll(".chk").forEach(cb=>cb.addEventListener("change",function(){
-    const iso=this.dataset.iso; attended[iso]=this.checked;
-    if(!this.checked){halfAtt[iso]=false;}
-    if(this.checked){leaveAmt[iso]=0;}
-    refreshRow(iso); updateStats(); save();
+    const iso=this.dataset.iso;attended[iso]=this.checked;
+    if(!this.checked) halfAtt[iso]=false;
+    if(this.checked)  leaveAmt[iso]=0;
+    refreshRow(iso);refreshCard(iso);updateStats();save();
   }));
-
   tbody.querySelectorAll(".chk-half-att").forEach(cb=>cb.addEventListener("change",function(){
-    const iso=this.dataset.iso; halfAtt[iso]=this.checked;
-    refreshRow(iso); updateStats(); save();
+    const iso=this.dataset.iso;halfAtt[iso]=this.checked;
+    refreshRow(iso);refreshCard(iso);updateStats();save();
   }));
-
   tbody.querySelectorAll(".lamt-btn").forEach(btn=>btn.addEventListener("click",function(){
     if(this.disabled)return;
-    const iso=this.dataset.iso; const amt=parseFloat(this.dataset.amt);
+    const iso=this.dataset.iso;const amt=parseFloat(this.dataset.amt);
     leaveAmt[iso]=(leaveAmt[iso]===amt)?0:amt;
     if(leaveAmt[iso]===0) leaveType[iso]="regular";
     else if(leaveAmt[iso]===0.5&&(leaveType[iso]==="emergency"||leaveType[iso]==="dayoff")) leaveType[iso]="regular";
-    refreshRow(iso); updateStats(); save();
+    refreshRow(iso);refreshCard(iso);updateStats();save();
   }));
-
   tbody.querySelectorAll(".leave-sel").forEach(sel=>sel.addEventListener("change",function(){
-    const iso=this.dataset.iso; leaveType[iso]=this.value;
-    updateStats(); save();
+    const iso=this.dataset.iso;leaveType[iso]=this.value;
+    updateStats();save();
   }));
-
   tbody.querySelectorAll(".ot-input").forEach(inp=>inp.addEventListener("input",function(){
-    const iso=this.dataset.iso; const v=parseFloat(this.value);
+    const iso=this.dataset.iso;const v=parseFloat(this.value);
     if(!v||v<=0) delete otHours[iso]; else otHours[iso]=v;
-    updateStats(); save();
+    updateStats();save();
   }));
 
+  renderCards();
   updateStats();
   const todayRow=document.getElementById("row-"+todayIso);
   if(todayRow) todayRow.scrollIntoView({behavior:"smooth",block:"center"});
 }
 
+/* ---- MOBILE CARDS RENDER ---- */
+function renderCards(){
+  const wrap=document.getElementById("cardsWrap");wrap.innerHTML="";
+  const todayIso=isoDate(new Date());
+  const hourly=isHourlyRole();
+  rows.forEach(r=>{
+    const att=attended[r.iso]||false;
+    const half=halfAtt[r.iso]||false;
+    const la=leaveAmt[r.iso]||0;
+    const ltype=leaveType[r.iso]||"regular";
+    const isPHatt=r.isPH&&att;
+    const canHalfAtt=att&&!r.isFri&&!r.isPH;
+    const canLeave=!r.isFri&&!att&&!r.isPH;
+    const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff");
+    const dcCls=rowClassToCard(getRowClass(r));
+    const dayName=curLang==="ar"?DAYS_AR[r.dow]:DAYS[r.dow];
+    const bonusPill=isPHatt&&!r.isFri?'<span class="bonus-pill">+1</span>':"";
+    const posTag=r.cyclePos!==null?`<span class="dc-pos">${r.cyclePos}/${r.W}</span>`:"";
+
+    const card=document.createElement("div");
+    card.className="day-card "+dcCls+(r.iso===todayIso?" dc-today":"");
+    card.id="card-"+r.iso;
+
+    const otSection=hourly?`<div class="dc-ot-row">
+      <span class="dc-ot-label">${t("thOt")}:</span>
+      <input type="number" class="dc-ot-input" min="0" max="24" step="0.5" data-iso="${r.iso}" value="${otHours[r.iso]||""}">
+    </div>`:"";
+
+    card.innerHTML=`
+      <div class="dc-head">
+        <div class="dc-date-blk">
+          <div class="dc-date">${fmtDate(r.d)}</div>
+          <div class="dc-dayname">${dayName}</div>
+        </div>
+        <span class="dc-type-badge">${r.cycleType}</span>
+        ${r.phName?`<span class="dc-ph-name">${r.phName}${bonusPill}</span>`:bonusPill}
+        ${posTag}
+      </div>
+      <div class="dc-body">
+        <div class="dc-checks">
+          <label class="dc-chk-lbl${att?" checked":""}">
+            <input type="checkbox" class="chk" data-iso="${r.iso}" ${att?"checked":""}>
+            <span>${t("dcAttended")}</span>
+          </label>
+          <label class="dc-chk-lbl${half?" checked":""}">
+            <input type="checkbox" class="chk-half-att" data-iso="${r.iso}" ${half?"checked":""} ${!canHalfAtt?"disabled":""}>
+            <span>${t("dcHalfAtt")}</span>
+          </label>
+        </div>
+        <div class="dc-leave-row">
+          <div class="dc-lamt-grp">
+            <button class="dc-lamt-btn${la===1?" active-full":""}" data-iso="${r.iso}" data-amt="1" ${!canLeave?"disabled":""}>${t("dcFull")}</button>
+            <button class="dc-lamt-btn${la===0.5?" active-half":""}" data-iso="${r.iso}" data-amt="0.5" ${(!canLeave||halfDisabled)?"disabled":""}>${t("dcHalf")}</button>
+          </div>
+          <select class="dc-leave-sel" data-iso="${r.iso}" ${(la===0||!canLeave)?"disabled":""}>
+            <option value="regular" ${ltype==="regular"?"selected":""}>${t("leaveTypeRegular")}</option>
+            <option value="emergency" ${la===0.5?"disabled":""} ${ltype==="emergency"?"selected":""}>${t("leaveTypeEmergency")}</option>
+            <option value="dayoff" ${la===0.5?"disabled":""} ${ltype==="dayoff"?"selected":""}>${t("leaveTypeDayOff")}</option>
+          </select>
+        </div>
+        ${otSection}
+      </div>`;
+    wrap.appendChild(card);
+  });
+
+  // card event listeners
+  wrap.querySelectorAll(".chk").forEach(cb=>cb.addEventListener("change",function(){
+    const iso=this.dataset.iso;attended[iso]=this.checked;
+    if(!this.checked) halfAtt[iso]=false;
+    if(this.checked)  leaveAmt[iso]=0;
+    refreshCard(iso);refreshRow(iso);updateStats();save();
+  }));
+  wrap.querySelectorAll(".chk-half-att").forEach(cb=>cb.addEventListener("change",function(){
+    const iso=this.dataset.iso;halfAtt[iso]=this.checked;
+    refreshCard(iso);refreshRow(iso);updateStats();save();
+  }));
+  wrap.querySelectorAll(".dc-lamt-btn").forEach(btn=>btn.addEventListener("click",function(){
+    if(this.disabled)return;
+    const iso=this.dataset.iso;const amt=parseFloat(this.dataset.amt);
+    leaveAmt[iso]=(leaveAmt[iso]===amt)?0:amt;
+    if(leaveAmt[iso]===0) leaveType[iso]="regular";
+    else if(leaveAmt[iso]===0.5&&(leaveType[iso]==="emergency"||leaveType[iso]==="dayoff")) leaveType[iso]="regular";
+    refreshCard(iso);refreshRow(iso);updateStats();save();
+  }));
+  wrap.querySelectorAll(".dc-leave-sel").forEach(sel=>sel.addEventListener("change",function(){
+    const iso=this.dataset.iso;leaveType[iso]=this.value;
+    updateStats();save();
+  }));
+  wrap.querySelectorAll(".dc-ot-input").forEach(inp=>inp.addEventListener("input",function(){
+    const iso=this.dataset.iso;const v=parseFloat(this.value);
+    if(!v||v<=0) delete otHours[iso]; else otHours[iso]=v;
+    updateStats();save();
+  }));
+
+  // scroll to today in card view
+  const todayCard=document.getElementById("card-"+todayIso);
+  if(todayCard&&window.innerWidth<768) todayCard.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
 function refreshRow(iso){
-  const tr=document.getElementById("row-"+iso); if(!tr)return;
-  const r=rows.find(x=>x.iso===iso); if(!r)return;
-  const att=attended[iso]||false, half=halfAtt[iso]||false;
-  const la=leaveAmt[iso]||0, ltype=leaveType[iso]||"regular";
+  const tr=document.getElementById("row-"+iso);if(!tr)return;
+  const r=rows.find(x=>x.iso===iso);if(!r)return;
+  const att=attended[iso]||false,half=halfAtt[iso]||false;
+  const la=leaveAmt[iso]||0,ltype=leaveType[iso]||"regular";
   const isPHatt=r.isPH&&att;
-  const canAtt=true;
-  const canHalfAtt=att&&canAtt&&!r.isFri&&!r.isPH;
+  const canHalfAtt=att&&!r.isFri&&!r.isPH;
   const canLeave=!r.isFri&&!att&&!r.isPH;
   const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff");
   const todayIso=isoDate(new Date());
   tr.className=getRowClass(r)+(iso===todayIso?" today-row":"");
   const bonusTag=isPHatt&&!r.isFri?'<span class="bonus-tag">+1</span>':"";
   tr.cells[4].innerHTML=(r.phName||"")+bonusTag;
-  const hcb=tr.querySelector(".chk-half-att"); if(hcb){hcb.disabled=!canHalfAtt; if(!canHalfAtt){hcb.checked=false; halfAtt[iso]=false;}}
+  const hcb=tr.querySelector(".chk-half-att");
+  if(hcb){hcb.disabled=!canHalfAtt;if(!canHalfAtt){hcb.checked=false;halfAtt[iso]=false;}}
   tr.querySelectorAll(".lamt-btn").forEach(btn=>{
     const amt=parseFloat(btn.dataset.amt);
     btn.disabled=!canLeave||(amt===0.5&&halfDisabled);
@@ -935,32 +1251,74 @@ function refreshRow(iso){
   });
   const sel=tr.querySelector(".leave-sel");
   if(sel){
-    sel.disabled=(la===0||!canLeave); sel.value=ltype;
-    const optEm=sel.querySelector('option[value="emergency"]'); if(optEm) optEm.disabled=(la===0.5);
-    const optDo=sel.querySelector('option[value="dayoff"]'); if(optDo) optDo.disabled=(la===0.5);
+    sel.disabled=(la===0||!canLeave);sel.value=ltype;
+    const optEm=sel.querySelector('option[value="emergency"]');if(optEm) optEm.disabled=(la===0.5);
+    const optDo=sel.querySelector('option[value="dayoff"]');if(optDo) optDo.disabled=(la===0.5);
   }
 }
 
+function refreshCard(iso){
+  const card=document.getElementById("card-"+iso);if(!card)return;
+  const r=rows.find(x=>x.iso===iso);if(!r)return;
+  const att=attended[iso]||false,half=halfAtt[iso]||false;
+  const la=leaveAmt[iso]||0,ltype=leaveType[iso]||"regular";
+  const isPHatt=r.isPH&&att;
+  const canHalfAtt=att&&!r.isFri&&!r.isPH;
+  const canLeave=!r.isFri&&!att&&!r.isPH;
+  const halfDisabled=la===1?false:(ltype==="emergency"||ltype==="dayoff");
+  const todayIso=isoDate(new Date());
+  card.className="day-card "+rowClassToCard(getRowClass(r))+(iso===todayIso?" dc-today":"");
+  // checkboxes
+  card.querySelectorAll(".dc-chk-lbl").forEach(lbl=>{
+    const cb=lbl.querySelector("input");
+    if(cb.classList.contains("chk")){
+      cb.checked=att;lbl.classList.toggle("checked",att);
+    }
+    if(cb.classList.contains("chk-half-att")){
+      cb.checked=half;lbl.classList.toggle("checked",half);
+      cb.disabled=!canHalfAtt;
+      if(!canHalfAtt){cb.checked=false;halfAtt[iso]=false;}
+    }
+  });
+  // leave buttons
+  card.querySelectorAll(".dc-lamt-btn").forEach(btn=>{
+    const amt=parseFloat(btn.dataset.amt);
+    btn.disabled=!canLeave||(amt===0.5&&halfDisabled);
+    btn.className="dc-lamt-btn"+(la===1&&amt===1?" active-full":la===0.5&&amt===0.5?" active-half":"");
+  });
+  // select
+  const sel=card.querySelector(".dc-leave-sel");
+  if(sel){
+    sel.disabled=(la===0||!canLeave);sel.value=ltype;
+    const optEm=sel.querySelector('option[value="emergency"]');if(optEm) optEm.disabled=(la===0.5);
+    const optDo=sel.querySelector('option[value="dayoff"]');if(optDo) optDo.disabled=(la===0.5);
+  }
+  // bonus pill
+  const bonusPill=isPHatt&&!r.isFri?'<span class="bonus-pill">+1</span>':"";
+  const phSpan=card.querySelector(".dc-ph-name");
+  if(phSpan) phSpan.innerHTML=(r.phName||"")+bonusPill;
+}
+
 function updateStats(){
-  const {regMax,emMax,carryOver}=getSettings();
+  const{regMax,emMax,carryOver}=getSettings();
   let work=0,half=0,leaveFull=0,leaveHalf=0,phAtt=0,regUsed=0,emUsed=0,dayOffUsed=0;
   const hourly=isHourlyRole();
   const todayIso=isoDate(new Date());
   const curPeriod=otPeriodFor(todayIso);
-  let otRaw=0, otWeighted=0;
+  let otRaw=0,otWeighted=0;
 
   rows.forEach(r=>{
     if(attended[r.iso]){
       if(halfAtt[r.iso]) half++; else work++;
-      if(r.isPH&&!r.isFri&&!hourly) phAtt++; // compensatory bonus excludes Fridays, and not for hourly roles
+      if(r.isPH&&!r.isFri&&!hourly) phAtt++;
     }
     const la=leaveAmt[r.iso]||0;
     if(la>0){
       if(la===1) leaveFull++; else leaveHalf++;
-      const days=la, lt=leaveType[r.iso]||"regular";
-      if(lt==="emergency") emUsed+=days;
-      else if(lt==="dayoff") dayOffUsed+=days;
-      else regUsed+=days;
+      const lt=leaveType[r.iso]||"regular";
+      if(lt==="emergency") emUsed+=la;
+      else if(lt==="dayoff") dayOffUsed+=la;
+      else regUsed+=la;
     }
     if(hourly&&otHours[r.iso]){
       if(otPeriodFor(r.iso)===curPeriod){
@@ -969,12 +1327,12 @@ function updateStats(){
       }
     }
   });
-  const bonus=phAtt; // +1 compensatory day per non-Friday PH attended (non-hourly roles only)
+  const bonus=phAtt;
   const regTotal=regMax+carryOver+bonus;
   const regRem=regTotal-regUsed;
   const emRem=emMax-emUsed;
-
   const attendedTotal=work+half*0.5;
+
   document.getElementById("s-work").textContent=attendedTotal.toFixed(1).replace(".0","");
   document.getElementById("s-half").textContent=half;
   document.getElementById("s-leave-full").textContent=leaveFull;
@@ -1001,8 +1359,7 @@ function updateStats(){
   document.getElementById("bar-em").className="bal-bar "+(emPct>80?"bar-red":emPct>50?"bar-orange":"bar-green");
 
   const setC=(id,v)=>{const el=document.getElementById(id);el.textContent=v;el.className=v<=0?"danger":v<=3?"warn":"ok";};
-  setC("b-reg-rem",regRem);
-  setC("b-em-rem",emRem);
+  setC("b-reg-rem",regRem);setC("b-em-rem",emRem);
 
   const note=document.getElementById("bal-note");
   if(regRem<=0) note.textContent=(curLang==="ar"?"انتهى رصيد الإجازة العادية! متبقي ":"Regular leave exhausted! You have ")+emRem+(curLang==="ar"?" يوم طوارئ.":" emergency days left.");
@@ -1017,7 +1374,7 @@ function updateStats(){
     document.getElementById("s-rem").textContent=rem>=0?rem+(curLang==="ar"?" يوم":" days"):(curLang==="ar"?"إجازة الدورة الحالية":"On cycle leave");
     const nl=rows.find(r=>r.iso>todayIso&&r.cycleType==="Leave day");
     document.getElementById("s-next").textContent=nl?fmtDate(nl.d):"—";
-  } else {
+  }else{
     document.getElementById("s-rem").textContent="—";
     document.getElementById("s-next").textContent="—";
   }
@@ -1028,10 +1385,8 @@ function exportCyclePDF(){
   let todayRow=rows.find(r=>r.iso===todayIso);
   let cycleNum=todayRow?todayRow.cycleNum:(rows[0]?rows[0].cycleNum:0);
   const cycleRows=rows.filter(r=>r.cycleNum===cycleNum).sort((a,b)=>a.iso<b.iso?-1:1);
-  if(!cycleRows.length){ return; }
-  const hourly=isHourlyRole();
-  const ar=curLang==="ar";
-
+  if(!cycleRows.length)return;
+  const hourly=isHourlyRole();const ar=curLang==="ar";
   let work=0,half=0,leaveFull=0,leaveHalf=0,phAtt=0,regUsed=0,emUsed=0,dayOffUsed=0,otRaw=0,otWeighted=0;
   cycleRows.forEach(r=>{
     if(attended[r.iso]){
@@ -1046,81 +1401,58 @@ function exportCyclePDF(){
       else if(lt==="dayoff") dayOffUsed+=la;
       else regUsed+=la;
     }
-    if(hourly&&otHours[r.iso]){ otRaw+=otHours[r.iso]; otWeighted+=otHours[r.iso]*otRate(r); }
+    if(hourly&&otHours[r.iso]){otRaw+=otHours[r.iso];otWeighted+=otHours[r.iso]*otRate(r);}
   });
-
   const rangeLabel=fmtDate(cycleRows[0].d)+" — "+fmtDate(cycleRows[cycleRows.length-1].d);
   const userLine=(currentUser?currentUser.fullName+" ("+currentUser.empId+") — "+currentUser.role:"");
-
   const rowsHtml=cycleRows.map(r=>{
-    const att=attended[r.iso]||false, half=halfAtt[r.iso]||false;
-    const la=leaveAmt[r.iso]||0, lt=leaveType[r.iso]||"";
+    const att=attended[r.iso]||false,half=halfAtt[r.iso]||false;
+    const la=leaveAmt[r.iso]||0,lt=leaveType[r.iso]||"";
     const dayName=ar?DAYS_AR[r.dow]:DAYS[r.dow];
     const cls=getRowClass(r);
     const attTxt=att?(half?(ar?"نصف يوم":"Half"):(ar?"يوم كامل":"Full")):"—";
     const leaveTxt=la>0?((la===1?(ar?"يوم كامل":"Full"):(ar?"نصف يوم":"Half"))+" / "+(lt==="emergency"?(ar?"طوارئ":"Emergency"):lt==="dayoff"?(ar?"راحة دورة":"Day Off"):(ar?"عادية":"Regular"))):"—";
     const otTxt=hourly?(otHours[r.iso]||"—"):"";
-    return `<tr class="${cls}">
-      <td>${fmtDate(r.d)}</td><td>${dayName}</td><td>${r.cycleType}</td><td>${r.phName||""}</td>
-      <td>${attTxt}</td><td>${leaveTxt}</td>${hourly?`<td>${otTxt}</td>`:""}
-    </tr>`;
+    return`<tr class="${cls}"><td>${fmtDate(r.d)}</td><td>${dayName}</td><td>${r.cycleType}</td><td>${r.phName||""}</td><td>${attTxt}</td><td>${leaveTxt}</td>${hourly?`<td>${otTxt}</td>`:""}</tr>`;
   }).join("");
-
-  const summaryHtml=`
-    <table class="summary">
-      <tr><th>${ar?"أيام الحضور":"Days attended"}</th><td>${(work+half*0.5).toFixed(1).replace(".0","")}</td>
-          <th>${ar?"إجازة كاملة":"Full leave"}</th><td>${leaveFull}</td>
-          <th>${ar?"إجازة نصف يوم":"Half leave"}</th><td>${leaveHalf}</td></tr>
-      <tr><th>${ar?"عادية مستخدمة":"Regular used"}</th><td>${regUsed}</td>
-          <th>${ar?"طوارئ مستخدمة":"Emergency used"}</th><td>${emUsed}</td>
-          <th>${ar?"راحة دورة مستخدمة":"Day-off used"}</th><td>${dayOffUsed}</td></tr>
-      ${hourly?`<tr><th>${ar?"ساعات إضافية فعلية":"OT actual hours"}</th><td>${otRaw}</td>
-          <th>${ar?"ساعات إضافية محسوبة":"OT weighted hours"}</th><td colspan="3">${otWeighted.toFixed(1).replace(".0","")}</td></tr>`
-        :`<tr><th>${ar?"بونص إجازات رسمية":"PH bonus days"}</th><td colspan="5">+${phAtt}</td></tr>`}
-    </table>`;
-
+  const summaryHtml=`<table class="summary">
+    <tr><th>${ar?"أيام الحضور":"Days attended"}</th><td>${(work+half*0.5).toFixed(1).replace(".0","")}</td>
+        <th>${ar?"إجازة كاملة":"Full leave"}</th><td>${leaveFull}</td>
+        <th>${ar?"إجازة نصف يوم":"Half leave"}</th><td>${leaveHalf}</td></tr>
+    <tr><th>${ar?"عادية مستخدمة":"Regular used"}</th><td>${regUsed}</td>
+        <th>${ar?"طوارئ مستخدمة":"Emergency used"}</th><td>${emUsed}</td>
+        <th>${ar?"راحة دورة مستخدمة":"Day-off used"}</th><td>${dayOffUsed}</td></tr>
+    ${hourly?`<tr><th>${ar?"ساعات إضافية فعلية":"OT actual hours"}</th><td>${otRaw}</td>
+        <th>${ar?"ساعات إضافية محسوبة":"OT weighted hours"}</th><td colspan="3">${otWeighted.toFixed(1).replace(".0","")}</td></tr>`
+      :`<tr><th>${ar?"بونص إجازات رسمية":"PH bonus days"}</th><td colspan="5">+${phAtt}</td></tr>`}
+  </table>`;
   const win=window.open("","_blank");
   win.document.write(`<!DOCTYPE html><html lang="${curLang}" dir="${ar?'rtl':'ltr'}"><head><meta charset="UTF-8">
   <title>Atrium Attendance Tracker — ${ar?"تصدير الدورة":"Cycle Export"}</title>
-  <style>
-    *{box-sizing:border-box;font-family:Arial,sans-serif}
-    body{padding:24px;color:#222}
-    .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1F4E79;padding-bottom:10px;margin-bottom:16px}
-    .top h1{color:#1F4E79;font-size:20px;margin-bottom:4px}
-    .top .meta{font-size:11px;color:#555;line-height:1.5}
-    .top .brand{font-size:10px;color:#888;font-style:italic;margin-top:4px}
-    table.summary{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:11px}
-    table.summary th{background:#1F4E79;color:#fff;padding:6px;text-align:${ar?'right':'left'};font-weight:600}
-    table.summary td{padding:6px;border:1px solid #ddd;font-weight:700;text-align:center}
-    table.cal{width:100%;border-collapse:collapse;font-size:11px}
-    table.cal th{background:#1F4E79;color:#fff;padding:6px;font-size:10px}
-    table.cal td{padding:5px 6px;border-bottom:1px solid #eee;text-align:center}
-    tr.r-work{background:#d4edda}tr.r-leave-full{background:#fff3cd}tr.r-leave-half{background:#fff9e6}
-    tr.r-ph{background:#f8d7da}tr.r-ph-att{background:#cce5ff}tr.r-fri{background:#e9ecef}tr.r-half-att{background:#e8d5f5}
-    @media print{ body{padding:8px} }
-  </style></head><body>
-    <div class="top">
-      <div>
-        <h1>${ar?"تقرير دورة الحضور":"Attendance Cycle Report"}</h1>
-        <div class="meta">${userLine}<br>${ar?"الفترة":"Period"}: ${rangeLabel}</div>
-      </div>
-      <div class="meta" style="text-align:${ar?'left':'right'}">
-        <div class="brand">Atrium Attendance Tracker</div>
-        <div>${ar?"تاريخ التصدير":"Exported"}: ${fmtDate(new Date())}</div>
-      </div>
-    </div>
-    ${summaryHtml}
-    <table class="cal">
-      <thead><tr>
-        <th>${ar?"التاريخ":"Date"}</th><th>${ar?"اليوم":"Day"}</th><th>${ar?"نوع اليوم":"Cycle type"}</th><th>${ar?"إجازة رسمية":"Public holiday"}</th>
-        <th>${ar?"الحضور":"Attended"}</th><th>${ar?"الإجازة":"Leave"}</th>${hourly?`<th>${ar?"ساعات إضافية":"OT hrs"}</th>`:""}
-      </tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-  </body></html>`);
-  win.document.close();
-  win.focus();
-  setTimeout(()=>{ win.print(); },350);
+  <style>*{box-sizing:border-box;font-family:Arial,sans-serif}body{padding:24px;color:#222}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1F4E79;padding-bottom:10px;margin-bottom:16px}
+  .top h1{color:#1F4E79;font-size:20px;margin-bottom:4px}.top .meta{font-size:11px;color:#555;line-height:1.5}
+  .top .brand{font-size:10px;color:#888;font-style:italic;margin-top:4px}
+  table.summary{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:11px}
+  table.summary th{background:#1F4E79;color:#fff;padding:6px;text-align:${ar?'right':'left'};font-weight:600}
+  table.summary td{padding:6px;border:1px solid #ddd;font-weight:700;text-align:center}
+  table.cal{width:100%;border-collapse:collapse;font-size:11px}
+  table.cal th{background:#1F4E79;color:#fff;padding:6px;font-size:10px}
+  table.cal td{padding:5px 6px;border-bottom:1px solid #eee;text-align:center}
+  tr.r-work{background:#d4edda}tr.r-leave-full{background:#fff3cd}tr.r-leave-half{background:#fff9e6}
+  tr.r-ph{background:#f8d7da}tr.r-ph-att{background:#cce5ff}tr.r-fri{background:#e9ecef}tr.r-half-att{background:#e8d5f5}
+  @media print{body{padding:8px}}</style></head><body>
+  <div class="top"><div><h1>${ar?"تقرير دورة الحضور":"Attendance Cycle Report"}</h1>
+  <div class="meta">${userLine}<br>${ar?"الفترة":"Period"}: ${rangeLabel}</div></div>
+  <div class="meta" style="text-align:${ar?'left':'right'}"><div class="brand">Atrium Attendance Tracker</div>
+  <div>${ar?"تاريخ التصدير":"Exported"}: ${fmtDate(new Date())}</div></div></div>
+  ${summaryHtml}
+  <table class="cal"><thead><tr>
+  <th>${ar?"التاريخ":"Date"}</th><th>${ar?"اليوم":"Day"}</th><th>${ar?"نوع اليوم":"Cycle type"}</th><th>${ar?"إجازة رسمية":"Public holiday"}</th>
+  <th>${ar?"الحضور":"Attended"}</th><th>${ar?"الإجازة":"Leave"}</th>${hourly?`<th>${ar?"ساعات إضافية":"OT hrs"}</th>`:""}
+  </tr></thead><tbody>${rowsHtml}</tbody></table></body></html>`);
+  win.document.close();win.focus();
+  setTimeout(()=>{win.print();},350);
 }
 
 ["startDate","workDays","leaveDays","phAsWork","regMax","emMax","carryOver"].forEach(id=>{
@@ -1128,50 +1460,41 @@ function exportCyclePDF(){
 });
 
 document.getElementById("footerYear").textContent=new Date().getFullYear();
-
-/* default start date = Jan 1 of current year (overridden by saved settings in load()) */
 document.getElementById("startDate").value=new Date().getFullYear()+"-01-01";
 
-/* ---------------- KEYBOARD CONTROL ---------------- */
+/* KEYBOARD */
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){
-    document.getElementById("clearModal").classList.remove("open");
-  }
+  if(e.key==="Escape") document.querySelectorAll(".modal-overlay").forEach(m=>m.classList.remove("open"));
 });
 function enterSubmits(fieldIds,fn){
   fieldIds.forEach(id=>{
-    document.getElementById(id).addEventListener("keydown",function(e){
-      if(e.key==="Enter"){ e.preventDefault(); fn(); }
-    });
+    const el=document.getElementById(id);
+    if(el) el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();fn();}});
   });
 }
 enterSubmits(["loginEmpId","loginPassword"],doLogin);
 enterSubmits(["suName","suEmpId","suPassword"],doSignup);
 
-/* ---------------- INIT ---------------- */
+/* INIT */
 applyDark();
 applyI18n();
 document.querySelector(".main").style.display="none";
 document.querySelector(".header").style.visibility="hidden";
 document.querySelector(".footer").style.visibility="hidden";
 
-if("serviceWorker" in navigator && (location.protocol==="http:"||location.protocol==="https:")){
+if("serviceWorker" in navigator&&(location.protocol==="http:"||location.protocol==="https:")){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("sw.js").then(reg=>{
-      reg.update().catch(()=>{});
-    }).catch(()=>{});
+    navigator.serviceWorker.register("sw.js").then(reg=>{reg.update().catch(()=>{});}).catch(()=>{});
   });
   let reloaded=false;
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{
-    if(reloaded)return; reloaded=true; location.reload();
-  });
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloaded)return;reloaded=true;location.reload();});
 }
 
 fbAuth.onAuthStateChanged(async user=>{
   if(user){
     try{
       const doc=await db.collection("users").doc(user.uid).get();
-      if(doc.exists){ enterApp(user.uid,doc.data()); return; }
+      if(doc.exists){enterApp(user.uid,doc.data());return;}
     }catch(e){}
   }
   currentUser=null;
