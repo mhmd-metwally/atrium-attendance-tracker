@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>Atrium Attendance Tracker</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1F4E79">
@@ -51,24 +51,12 @@ body.dark tr.r-base td{color:var(--text)}
 body.dark .modal-box{background:var(--card);color:var(--text)}
 body.dark .footer{background:#0a0e14;color:var(--muted);border-top-color:var(--border)}
 
-/* SAFE AREA TOP FILL — covers notch/status-bar with header color */
-.safe-top{
-  position:fixed;top:0;left:0;right:0;
-  height:env(safe-area-inset-top);
-  background:var(--primary);
-  z-index:51;
-}
 /* HEADER */
 .header{
   background:linear-gradient(135deg,var(--primary),var(--primary2));
-  color:#fff;
-  padding:11px 14px;
-  padding-left:max(14px, env(safe-area-inset-left));
-  padding-right:max(14px, env(safe-area-inset-right));
+  color:#fff;padding:11px 14px;
   display:flex;align-items:center;gap:10px;
-  position:sticky;
-  top:env(safe-area-inset-top);
-  z-index:50;
+  position:sticky;top:0;z-index:50;
   box-shadow:0 2px 12px rgba(0,0,0,.22);
 }
 .header-icon{flex-shrink:0;opacity:.9}
@@ -99,7 +87,7 @@ body.dark .footer{background:#0a0e14;color:var(--muted);border-top-color:var(--b
 .toggle-wrap{display:flex;align-items:center;gap:4px;font-size:10px;opacity:.9}
 
 /* MAIN */
-.main{max-width:1320px;margin:0 auto;padding:12px;padding-bottom:calc(env(safe-area-inset-bottom) + 80px);padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+.main{max-width:1320px;margin:0 auto;padding:12px;padding-bottom:88px}
 
 /* CONTROLS */
 .controls-wrap{margin-bottom:10px}
@@ -297,10 +285,7 @@ input.dc-ot-input{
 
 /* FAB */
 .fab-today{
-  position:fixed;
-  bottom:calc(env(safe-area-inset-bottom) + 16px);
-  right:calc(env(safe-area-inset-right) + 14px);
-  z-index:60;
+  position:fixed;bottom:20px;right:16px;z-index:60;
   background:var(--primary);color:#fff;border:none;
   border-radius:28px;padding:13px 20px;
   font-size:13px;font-weight:800;cursor:pointer;
@@ -385,7 +370,7 @@ body.dark .auth-tab{background:var(--bg)}
 [dir="rtl"] .day-card.dc-ph-att{border-right-color:#004085}
 [dir="rtl"] .day-card.dc-fri{border-right-color:#adb5bd}
 [dir="rtl"] .day-card.dc-half-att{border-right-color:#8e44ad}
-[dir="rtl"] .fab-today{right:auto;left:calc(env(safe-area-inset-left) + 14px)}
+[dir="rtl"] .fab-today{right:auto;left:16px}
 
 /* MONTH SEPARATOR */
 .month-sep{
@@ -423,7 +408,6 @@ body.dark .month-sep{color:var(--primary2);border-bottom-color:var(--border)}
 </style>
 </head>
 <body>
-<div class="safe-top"></div>
 
 <!-- AUTH SCREEN -->
 <div class="auth-overlay" id="authScreen">
